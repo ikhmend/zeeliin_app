@@ -2,12 +2,10 @@ import React from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
 const { Title } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
-
   const onFinish = (values) => {
     console.log("submitted", values);
 
@@ -68,7 +66,7 @@ const Login = () => {
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="Хэрэглэгчийн нэр (admin)"
+              placeholder="Хэрэглэгчийн нэр"
               size="large"
             />
           </Form.Item>
@@ -84,7 +82,7 @@ const Login = () => {
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="Нууц үг (admin123)"
+              placeholder="Нууц үг "
               size="large"
             />
           </Form.Item>
