@@ -1,3 +1,18 @@
 import express from "express";
+import * as loansController from "../controllers/loans.controller.js";
+import * as paymentsController from "../controllers/payments.controller.js";
+import * as installmentsController from "../controllers/installments.controller.js";
 const router = express.Router();
+router.get("/", loansController.getLoans);
+router.post("/", loansController.createLoan);
+router.get("/search", loansController.searchLoans);
+router.get("/active", loansController.getActiveLoans);
+router.get("/inactive", loansController.getInactiveLoans);
+router.get("/product", loansController.getLoansByProduct);
+router.get("/customer/:customerId", loansController.getLoansByCustomerId);
+router.get("/:id/installments", installmentsController.getInstallmentsByLoanId);
+router.post("/:id/installments/generate", installmentsController.generateInstallments);
+router.put("/:id/payments", paymentsController.updatePayments);
+router.get("/:id", loansController.getLoan);
+router.put("/:id", loansController.updateLoan);
 export default router;
