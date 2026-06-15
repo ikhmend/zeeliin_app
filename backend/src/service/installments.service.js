@@ -1,12 +1,19 @@
-import * as loansRepository from "..repository/loans.repository.js";
-import * as installmentsRepository from "..repository/installments.repository.js";
-export async function generateInstallments(id){ //eniig installments.service.js ruu zuunu
-    const loan=await loansRepository.getLoan(id);
-    const hasInstallments= await installmentsRepository.findInstallmentsByLoanId(id); //uusgeegu bga
+import * as loansRepository from "../repository/loans.repository.js";
+import * as installmentsRepository from "../repository/installments.repository.js";
+export async function getInstallmentsByLoanId(loanId){
+    const loan=await loansRepository.findLoan(loanId);
+    if(!loan){
+        throw new Error("Ийм дугаартай зээл байхгүй байна.");
+    }
+    return await installmentsRepository.getInstallmentsByLoanId(loanId);
+}
+export async function generateInstallments(id){ //eniig installments.service.js ruu 
+    const loan=await loansRepository.findLoan(id);
+    const hasInstallments= await installmentsRepository.getInstallmentsByLoanId(id);
     if(!loan){
         throw new Error("Зээл алга байна.");
     }
-    else if (hasInstallments.length>0){
+    else if (hasInstallments.length > 0){
         throw new Error("Төлбөрийн хуваарьтай зээл байна.")
     }
     else if(!loan.loan_amount ||loan.loan_amount<=0 || loan.interest_rate<0 || loan.duration_month<=0 || !loan.start_date ){
@@ -21,7 +28,8 @@ export async function generateInstallments(id){ //eniig installments.service.js 
         const totalAmount=sariin_tulbur+interestAmount;
         const dueDate = new Date(loan.start_date);
         dueDate.setMonth(dueDate.getMonth() + i);
-        installments.push({loan_id: loan.id, installment_no:i, due_date: loan.start_date+i, principal_amount: sariin_tulbur, interest_amount: interestAmount, total_amount:totalAmount, remaining_amount: totalAmount, status: "pending", paid_date: null});
+        const dueDateString = dueDate.toISOString().split("T")[0];
+        installments.push({loan_id: loan.id, installment_no:i, due_date: dueDate.toISOString().split("T")[0], principal_amount: sariin_tulbur, interest_amount: interestAmount, total_amount:totalAmount, remaining_amount: totalAmount, status: "pending", paid_date: null});
         remaining=remaining-sariin_tulbur;
         i++;
     }

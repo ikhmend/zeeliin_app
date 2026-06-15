@@ -1,4 +1,4 @@
-import Loan from "../models/loan.model.js";
+import Loan from "../../models/loan.model.js";
 import { Op } from "sequelize";
 export async function createLoan(loanData){
     return await Loan.create(loanData);
@@ -91,4 +91,12 @@ export async function findLoansByProduct(loanProduct){
         },
         order:[["created_at", "desc"]],
     });
+}
+export async function findLoansByProduct(loanProduct){
+  return await Loan.findAll({
+    where:{
+      loan_product: loanProduct,
+    },
+    order: [["created_at", "desc"]]
+  })
 }

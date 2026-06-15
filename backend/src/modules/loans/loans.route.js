@@ -1,0 +1,11 @@
+import express from "express";
+import * as meController from "../personal/me.controller.js";
+import * as paymentsController from "../payments/payments.controller.js";
+const router = express.Router();
+router.get("/profile", meController.getMyProfile);
+router.put("/profile", meController.updateMyProfile);
+router.get("/loans", meController.getMyLoans);
+router.get("/loans/:loanId", meController.getMyLoanDetail);
+router.get("/loans/:loanId/installments", meController.getMyLoanInstallments);
+router.post("/loans/:loanId/payments", paymentsController.makeMyPayment);
+export default router;

@@ -1,5 +1,5 @@
-import * as loanBusinessServices from "../service/loans/loans.businessService.js";
-import * as loancrudServices from "../service/loans/loans.crudService.js";
+import * as loanBusinessServices from "../loans/loans.business.service.js";
+import * as loancrudServices from "../loans/loans.Crud.service.js";
 export async function createLoan(req, res){
     try{
         const data=req.body;

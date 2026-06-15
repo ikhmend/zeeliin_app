@@ -12,7 +12,7 @@ router.get("/product", loansController.getLoansByProduct);
 router.get("/customer/:customerId", loansController.getLoansByCustomerId);
 router.get("/:id/installments", installmentsController.getInstallmentsByLoanId);
 router.post("/:id/installments/generate", installmentsController.generateInstallments);
-router.put("/:id/payments", paymentsController.updatePayments);
+// router.put("/:id/payments", paymentsController.updatePayments); 
 router.get("/:id", loansController.getLoan);
 router.put("/:id", loansController.updateLoan);
 export default router;
