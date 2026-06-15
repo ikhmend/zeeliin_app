@@ -35,7 +35,18 @@ Object.keys(db).forEach(modelName => {
     db[modelName].associate(db);
   }
 });
-
+import sequelize from "../config/sequelize.js";
+import Loan from "./loan.model.js";
+import Installment from "./installment.model.js";
+Loan.hasMany(Installment, {
+  foreignKey: "loan_id",
+  as: "installments",
+});
+Installment.belongsTo(Loan, {
+  foreignKey: "loan_id",
+  as: "loan",
+});
+export { sequelize, Loan, Installment };
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
