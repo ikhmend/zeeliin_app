@@ -38,6 +38,7 @@ Object.keys(db).forEach(modelName => {
 import sequelize from "../config/sequelize.js";
 import Loan from "./loan.model.js";
 import Installment from "./installment.model.js";
+import User from "./user.model.js";
 Loan.hasMany(Installment, {
   foreignKey: "loan_id",
   as: "installments",

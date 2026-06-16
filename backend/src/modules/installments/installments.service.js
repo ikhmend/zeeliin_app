@@ -1,7 +1,7 @@
 import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "./installments.repository.js";
 function roundTo(value) {
-  return Math.round(Number(value) * 100) / 100;
+  return Math.round(Number(value)*100)/100;
 }
 export async function getInstallmentsByLoanId(loanId) {
   const loan = await loansRepository.findLoan(loanId);
@@ -23,14 +23,7 @@ export async function generateInstallments(loanId) {
   const durationMonth = Number(loan.duration_month);
   const interestRate = Number(loan.interest_rate);
   const startDate = loan.start_date;
-  if (
-    !loanAmount ||
-    loanAmount <= 0 ||
-    !durationMonth ||
-    durationMonth <= 0 ||
-    interestRate < 0 ||
-    !startDate
-  ) {
+  if (!loanAmount || loanAmount <= 0 || !durationMonth || durationMonth <= 0 || interestRate < 0 ||!startDate) {
     throw new Error("Төлбөрийн хуваарь үүсгэхэд шаардлагатай мэдээлэл бүрэн биш байна.");
   }
   let remainingPrincipal = loanAmount;
@@ -39,7 +32,7 @@ export async function generateInstallments(loanId) {
   for (let i = 1; i <= durationMonth; i++) {
     const dueDate = new Date(startDate);
     dueDate.setMonth(dueDate.getMonth() + i);
-    const principalAmount =i === durationMonth ? round2(remainingPrincipal) : monthlyPrincipal;
+    const principalAmount =i === durationMonth ? roundTo(remainingPrincipal) : monthlyPrincipal;
     const interestAmount = roundTo((remainingPrincipal * interestRate) / 100);
     const totalAmount = roundTo(principalAmount + interestAmount);
     installments.push({
@@ -54,7 +47,13 @@ export async function generateInstallments(loanId) {
       paid_date: null,
       paid_amount: 0,
     });
-    remainingPrincipal = roundTo(remainingPrincipal - principalAmount);
+    remainingPrincipal= roundTo(remainingPrincipal - principalAmount);
   }
   return await installmentsRepository.createInstallments(installments);
+}
+export async function updateOverdueInstallments(loanId){
+  const loan= await loansRepository.findLoan(loanId);
+  if(!loan){
+    throw new Error("Ийм дугаартай зээл байхгүй байна.");
+  }
 }

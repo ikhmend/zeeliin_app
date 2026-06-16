@@ -1,6 +1,5 @@
 import * as loansRepository from "../repository/loans.repository.js";
 import * as installmentsRepository from "../repository/installments.repository.js";
-
 export async function updatePayments(id, paymentData) {
   const loan = await loansRepository.findLoan(id);
   const { payment_amount, payment_date, payment_method } = paymentData;

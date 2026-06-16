@@ -5,7 +5,7 @@ export async function getInstallmentsByLoanId(loanId) {
     where: {
       loan_id: loanId,
     },
-    order: [["installment_no", "ASC"]],
+    order: [["installment_no", "asc"]],
   });
 }
 export async function createInstallments(installments) {
@@ -42,4 +42,9 @@ export async function getTotalRemainingAmountByLoanId(loanId) {
     },
   });
   return Number(totalRemaining || 0);
+}
+export async function markOverdue(loanId){
+  return await installment.update(
+    {status:'overdue'}, {where: {loan_id: loanId}}
+  );
 }
