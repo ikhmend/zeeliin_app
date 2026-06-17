@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import Installment from "../../models/installments.model.js";
+import Loan from "../../models/loan.model.js";
 export async function getInstallmentsByLoanId(loanId) {
   return await Installment.findAll({
     where: {
@@ -69,6 +70,56 @@ export async function markOverdue(loanId, today) {
       returning: true,
     }
   );
-
   return updatedRows;
+}
+export async function findNextInstallmentsByLoanId(loanId, limit = 3) {
+  return await Installment.findAll({
+    where: {
+      loan_id: loanId,
+      remaining_amount: {
+        [Op.gt]: 0,
+      },
+      status: {
+        [Op.in]: ["pending", "partial", "overdue"],
+      },
+    },
+    order: [["due_date", "asc"]],
+    limit,
+  });
+}
+
+export async function findUpcomingInstallmentsByCustomerId(customerId, limit = 3){
+  return await Installment.findAll({
+    where: {
+      remaining_amount: {
+        [Op.gt]: 0,
+      },
+      status: {
+        [Op.in]: ["pending", "partial", "overdue"],
+      },
+    },
+    include: [
+      {
+        model: Loan,
+        as: "loan",
+        required: true,
+        attributes: [
+          "id",
+          "contract_no",
+          "loan_status",
+        ],
+        where: {
+          customer_id: customerId,
+          loan_status: {
+            [Op.in]: ["active", "overdue"],
+          },
+        },
+      },
+    ],
+    order: [
+      ["due_date", "asc"],
+      ["id", "asc"],
+    ],
+    limit,
+  });
 }

@@ -11,10 +11,6 @@ const Customer= sequelize.define(
             type:DataTypes.STRING,
             allowNull: false,
         },
-        contract_no:{
-            type:DataTypes.STRING,
-            allowNull:false,
-        },
         customer_type:{
             type:DataTypes.STRING,
             allowNull: true,

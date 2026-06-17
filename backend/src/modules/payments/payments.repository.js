@@ -38,3 +38,22 @@ export async function findPaymentsByCustomerId(customerId) {
     order: [["payment_date", "DESC"]],
   });
 }
+export async function findRecentPaymentsByCustomerId(customerId, limit = 3) {
+  return await Payment.findAll({
+    include: [
+      {
+        model: Loan,
+        as: "loan",
+        required: true,
+        where: {
+          customer_id: customerId,
+        },
+      },
+    ],
+    order: [
+      ["payment_date", "desc"],
+      ["created_at", "desc"],
+    ],
+    limit,
+  });
+}
