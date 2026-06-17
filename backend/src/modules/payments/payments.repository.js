@@ -40,11 +40,13 @@ export async function findPaymentsByCustomerId(customerId) {
 }
 export async function findRecentPaymentsByCustomerId(customerId, limit = 3) {
   return await Payment.findAll({
+    attributes:["payment_amount", "payment_date",],
     include: [
       {
         model: Loan,
         as: "loan",
         required: true,
+        attributes:[],
         where: {
           customer_id: customerId,
         },

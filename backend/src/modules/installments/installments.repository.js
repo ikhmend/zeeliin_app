@@ -87,9 +87,9 @@ export async function findNextInstallmentsByLoanId(loanId, limit = 3) {
     limit,
   });
 }
-
-export async function findUpcomingInstallmentsByCustomerId(customerId, limit = 3){
+export async function findUpcomingInstallmentsByCustomerId(customerId,limit = 3){
   return await Installment.findAll({
+    attributes: ["due_date", "remaining_amount",],
     where: {
       remaining_amount: {
         [Op.gt]: 0,
@@ -103,11 +103,7 @@ export async function findUpcomingInstallmentsByCustomerId(customerId, limit = 3
         model: Loan,
         as: "loan",
         required: true,
-        attributes: [
-          "id",
-          "contract_no",
-          "loan_status",
-        ],
+        attributes: [],
         where: {
           customer_id: customerId,
           loan_status: {
@@ -117,8 +113,8 @@ export async function findUpcomingInstallmentsByCustomerId(customerId, limit = 3
       },
     ],
     order: [
-      ["due_date", "asc"],
-      ["id", "asc"],
+      ["due_date", "ASC"],
+      ["id", "ASC"],
     ],
     limit,
   });
