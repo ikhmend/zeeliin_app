@@ -1,6 +1,7 @@
 import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "../installments/installments.repository.js";
 import * as paymentsRepository from "./payments.repository.js";
+import * as installmentService from "../installments/installments.service.js"
 export async function makePayment(id, paymentData) {
   const loan = await loansRepository.findLoan(id);
   const { payment_amount, payment_date, payment_method, received_user_id, note } = paymentData;
@@ -10,6 +11,7 @@ export async function makePayment(id, paymentData) {
   if (loan.loan_status === "closed" || loan.loan_status === "paid") {
     throw new Error("Төлөгдсөн зээл байна.");
   }
+  await installmentService.updateOverdueInstallments(id);
   if (!payment_amount ||Number(payment_amount) <= 0 ||!payment_date ||!payment_method?.trim()) {
     throw new Error("Алдаатай төлөлт.");
   }

@@ -14,3 +14,21 @@ export async function findUserByLogin(login) {
     },
   });
 }
+export async function createUser(userData){
+  return await User.create(userData);
+}
+export async function findUserByUnique({username, phone, email}){
+  const ok=[];
+  if(username){ok.push(username)}
+  else if(phone){ok.push(phone)}
+  else {ok.push(email)}
+  if(ok.length===0){return null}
+  return await User.findOne({
+    where:{[Op.or]:ok},
+  });
+}
+export async function findUserByCustomerId(customerId){
+  return await User.findOne({
+    where:{customer_id: customerId}
+  });
+}

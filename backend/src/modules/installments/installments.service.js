@@ -8,6 +8,7 @@ export async function getInstallmentsByLoanId(loanId) {
   if (!loan) {
     throw new Error("Ийм дугаартай зээл байхгүй байна.");
   }
+  await updateOverdueInstallments(loanId);
   return await installmentsRepository.getInstallmentsByLoanId(loanId);
 }
 export async function generateInstallments(loanId) {
@@ -51,9 +52,11 @@ export async function generateInstallments(loanId) {
   }
   return await installmentsRepository.createInstallments(installments);
 }
-export async function updateOverdueInstallments(loanId){
-  const loan= await loansRepository.findLoan(loanId);
-  if(!loan){
-    throw new Error("Ийм дугаартай зээл байхгүй байна.");
+export async function updateOverdueInstallments(loanId) {
+  const loan = await loansRepository.findLoan(loanId);
+  if (!loan) {
+    throw new Error("Зээл олдсонгүй.");
   }
+  const unuudur = new Date().toISOString().split("T")[0];
+  return await installmentsRepository.markOverdue(loanId, unuudur);
 }

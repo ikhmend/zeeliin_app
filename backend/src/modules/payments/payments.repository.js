@@ -1,5 +1,6 @@
-import { Op } from "sequelize";
+import { Model, Op } from "sequelize";
 import Payment from "../../models/payments.model.js";
+import Loan from "../../models/loan.model.js";
 export async function createPayment(paymentData){
     return await Payment.create(paymentData);
 }
@@ -21,4 +22,19 @@ export async function findPaymentsByInstallmentId(installmentId){
 }
 export async function findPaymentById(id){
     return await Payment.findByPk(id);
+}
+export async function findPaymentsByCustomerId(customerId) {
+  return await Payment.findAll({
+    include: [
+      {
+        model: Loan,
+        as: "loan",
+        required: true,
+        where: {
+          customer_id: customerId,
+        },
+      },
+    ],
+    order: [["payment_date", "DESC"]],
+  });
 }
