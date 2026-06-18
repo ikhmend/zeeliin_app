@@ -24,3 +24,15 @@ export async function findCustomerByRegisterNo(reg_no){
     where:{register_no: reg_no},
   });
 }
+export async function updateCustomer(customerId, updateData){
+  const customer = await Customer.findByPk(customerId);
+  if(!customer){
+    return null;
+  }
+  return await Customer.update(updateData, {
+    where: {
+      id: customer.id,
+    },
+      returning: true,
+  });
+}

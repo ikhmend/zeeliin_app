@@ -1,65 +1,21 @@
 import * as loansCrudService from "./loans.Crud.service.js";
 import * as loansBusinessService from "./loans.business.service.js";
-export async function getLoans(req, res) {
-  try {
-    const loans = await loansCrudService.getLoans();
-    res.status(200).json({
-      success: true,
-      data: loans,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Зээлийн мэдээлэл авахад алдаа.",
-      error: error.message,
-    });
-  }
-}
-export async function getLoan(req, res) {
-  try {
-    const {id} = req.params;
-    const loan = await loansCrudService.getLoan(id);
-    res.status(200).json({
-      success: true,
-      data: loan,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Зээлийн мэдээлэл авахад алдаа.",
-      error: error.message,
-    });
-  }
-}
-export async function createLoan(req, res) {
-  try {
-    const loanData = req.body;
-    const result = await loansBusinessService.createLoanWithInstallments(loanData);
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Зээл үүсгэхэд алдаа.",
-      error: error.message,
-    });
-  }
-}
-export async function getInstallmentsByLoanId(req, res) {
-  try {
-    const { id } = req.params;
-    const installments = await installmentsRepository.getInstallmentsByLoanId(id);
-    res.status(200).json({
-      success: true,
-      data: installments,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Төлбөрийн хуваарь авахад алдаа.",
-      error: error.message,
-    });
-  }
-}
+import * as installmentsService from "../installments/installments.service.js"
+import asyncHandler from "../../utils/asyncHandler.js";
+import {Success} from "../../utils/sendResponse.js";
+export const getLoans= asyncHandler(async (req, res) => {
+  const loans= await loansCrudService.getLoans();
+  return Success(res, loans);
+});
+export const getLoan= asyncHandler(async (req, res) => {
+  const data= await loansCrudService.getLoan(req.params.loanId);
+  return Success(res, data);
+});
+export const createLoan= asyncHandler(async (req, res) => {
+  const data= await loansBusinessService.createLoanWithInstallments(req.body);
+  return Success(res, data, 201, "Зээл амжилттай үүслээ.");
+});
+export const getInstallmentsByLoanId= asyncHandler(async (req, res) => {
+  const installments= await installmentsService.getInstallmentsByLoanId(req.params.loanId);
+  return Success(res, installments);
+});

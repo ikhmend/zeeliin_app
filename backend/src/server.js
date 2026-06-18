@@ -7,6 +7,7 @@ import loanRoutes from "./modules/loans/loans.route.js";
 import sequelize from "./config/sequelize.js";
 import authRoutes from "./modules/auth/auth.route.js"
 import personalRoutes from "./modules/personal/personal.route.js";
+import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
 dotenv.config();
 const app=express();
 app.use(cors());
@@ -26,6 +27,8 @@ app.get("/api/test", async (req, res)=>{
         res.status(500).json({message: "db holbolt amjiltgui", error: error.message});
     }
 });
+app.use(notFoundHandler);
+app.use(errorHandler);
 const port=process.env.PORT || 5000;
 app.listen(port, ()=>{
     console.log(`ok ${port}`);

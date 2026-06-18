@@ -1,162 +1,39 @@
 import * as personalService from "./personal.service.js";
 import asyncHandler from "../../utils/asyncHandler.js";
-export async function getDashboard(req, res){
-    try{
-        const id= req.user.customer_id;
-        const data= await personalService.getDashboardData(id);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Dashboard мэдээлэл авахад алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function getProfile(req, res){
-    try{
-        const userId=req.user.id;
-        const customerId=req.user.customer_id;
-        const data= await personalService.getProfileData(userId, customerId);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Хэрэглэгчийн мэдээлэл авахад алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function updateProfile(req, res){
-    try{
-        const customerId=req.user.customer_id;
-        const customerData= req.body;
-        const data= await personalService.updateProfile(customerId, customerData);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Хэрэглэгчийн мэдээлэл шинэчлэхэд алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function getMyLoans(req, res){
-    try{
-        const id=req.user.customer_id;
-        const data= await personalService.getMyLoans(id);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Харилцагчийн зээлийн мэдээлэл авахад алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function getMyLoanById(req, res){
-    try{
-        const loanId=req.params.loanId;
-        const customerId=req.user.customer_id;
-        const data= await personalService.getMyLoanById(customerId, loanId);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Хэрэглэгчийн зээлийн мэдээлэл авахад алдаа",
-            error:error.message,
-        });
-    }
-}
-export async function getMyLoanInstallments(req, res){
-    try{
-        const customerId=req.user.customer_id;
-        const loanId=req.params.loanId;
-        const data= await personalService.getMyLoanInstallments(customerId, loanId);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success: false,
-            message:"Зээлийн төлбөрийн хуваарь авахад алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function getMyLoanPayments(req, res){
-    try{
-        const customerId=req.user.customer_id;
-        const loanId=req.params.loanId;
-        const data= await personalService.getMyLoanPayments(customerId, loanId);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Зээлийн төлөлтийн түүх авахад алдаа",
-            error:error.message,
-        });
-    }
-}
-export async function getMyPayments(req, res){
-    try{
-        const customerId=req.user.customer_id;
-        const data= await personalService.getMyPayments(customerId);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Хэрэгэлэгчийн төлөлтийн түүх авахад алдаа.",
-            error:error.message,
-        });
-    }
-}
-export async function makeMyPayment(req, res){
-    try{
-        const customerId=req.user.customer_id;
-        const loanId=req.params.loanId;
-        const paymentData=req.body;
-        const data= await personalService.makeMyPayment(customerId, loanId, paymentData);
-        res.status(200).json({
-            success:true,
-            data:data,
-        });
-    }
-    catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Зээлийн төлбөр хийхэд алдаа",
-            error:error.message,
-        });
-    }
-}
+import { Success } from "../../utils/sendResponse.js";
+export const getDashboard = asyncHandler(async (req, res) => {
+    const data = await personalService.getDashboardData(req.user.customer_id);
+    return Success(res, data);
+});
+export const getProfile= asyncHandler(async (req, res) => {
+    const data= await personalService.getProfileData(req.user.id, req.user.customer_id);
+    return Success(res, data);
+}); 
+export const updateProfile= asyncHandler(async (req, res) => {
+    const data= await personalService.updateProfile(req.user.customer_id, req.body);
+    return Success(res, data, 200, "Амжилттай шинэчлэгдлээ.");
+});
+export const getMyLoans= asyncHandler(async (req, res) => {
+    const data= await personalService.getMyLoans(req.user.customer_id);
+    return Success(res, data);
+});
+export const getMyLoanById= asyncHandler(async(req, res)=>{
+    const data= await personalService.getMyLoanById(req.user.customer_id, req.params.loanId);
+    return Success(res, data);
+});
+export const getMyLoanInstallments = asyncHandler(async (req, res) => {
+    const data= await personalService.getMyLoanInstallments(req.user.customer_id, req.params.loanId);
+    return Success(res, data);
+});
+export const getMyLoanPayments= asyncHandler(async (req, res) => {
+    const data= await personalService.getMyLoanPayments(req.user.customer_id, req.params.loanId);
+    return Success(res, data);
+});
+export const getMyPayments= asyncHandler(async (req, res) => {
+    const data= await personalService.getMyPayments(req.user.customer_id);
+    return Success(res, data);
+});
+export const makeMyPayment= asyncHandler(async (req, res) => {
+    const data= await personalService.makeMyPayment(req.user.customer_id, req.params.loanId, req.body);
+    return Success(res, data, 201, "Төлөлт амжилттай.");
+});

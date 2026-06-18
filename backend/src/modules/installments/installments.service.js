@@ -1,3 +1,4 @@
+import AppError from "../../utils/AppError.js";
 import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "./installments.repository.js";
 function roundTo(value) {
@@ -6,7 +7,7 @@ function roundTo(value) {
 export async function getInstallmentsByLoanId(loanId) {
   const loan = await loansRepository.findLoan(loanId);
   if (!loan) {
-    throw new Error("Ийм дугаартай зээл байхгүй байна.");
+    throw new AppError("Ийм дугаартай зээл байхгүй байна.", 404);
   }
   await updateOverdueInstallments(loanId);
   return await installmentsRepository.getInstallmentsByLoanId(loanId);
@@ -14,18 +15,18 @@ export async function getInstallmentsByLoanId(loanId) {
 export async function generateInstallments(loanId) {
   const loan = await loansRepository.findLoan(loanId);
   if (!loan) {
-    throw new Error("Зээл олдсонгүй.");
+    throw new AppError("Зээл олдсонгүй.", 404);
   }
   const existingInstallments =await installmentsRepository.getInstallmentsByLoanId(loanId);
   if (existingInstallments.length > 0) {
-    throw new Error("Энэ зээл төлбөрийн хуваарьтай байна.");
+    throw new AppError("Энэ зээл төлбөрийн хуваарьтай байна.", 409);
   }
   const loanAmount = Number(loan.loan_amount);
   const durationMonth = Number(loan.duration_month);
   const interestRate = Number(loan.interest_rate);
   const startDate = loan.start_date;
   if (!loanAmount || loanAmount <= 0 || !durationMonth || durationMonth <= 0 || interestRate < 0 ||!startDate) {
-    throw new Error("Төлбөрийн хуваарь үүсгэхэд шаардлагатай мэдээлэл бүрэн биш байна.");
+    throw new AppError("Төлбөрийн хуваарь үүсгэхэд шаардлагатай мэдээлэл бүрэн биш байна.", 400);
   }
   let remainingPrincipal = loanAmount;
   const monthlyPrincipal = roundTo(loanAmount / durationMonth);
@@ -55,7 +56,7 @@ export async function generateInstallments(loanId) {
 export async function updateOverdueInstallments(loanId) {
   const loan = await loansRepository.findLoan(loanId);
   if (!loan) {
-    throw new Error("Зээл олдсонгүй.");
+    throw new AppError("Зээл олдсонгүй.", 404);
   }
   const unuudur = new Date().toISOString().split("T")[0];
   return await installmentsRepository.markOverdue(loanId, unuudur);

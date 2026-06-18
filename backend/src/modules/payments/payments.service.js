@@ -2,26 +2,27 @@ import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "../installments/installments.repository.js";
 import * as paymentsRepository from "./payments.repository.js";
 import * as installmentService from "../installments/installments.service.js"
+import AppError from "../../utils/AppError.js";
 export async function makePayment(id, paymentData) {
   const loan = await loansRepository.findLoan(id);
   const { payment_amount, payment_date, payment_method, received_user_id, note } = paymentData;
   if (!loan) {
-    throw new Error("Зээл байхгүй байна.");
+    throw new AppError("Зээл байхгүй байна.", 404);
   }
   if (loan.loan_status === "closed" || loan.loan_status === "paid") {
-    throw new Error("Төлөгдсөн зээл байна.");
+    throw new AppError("Төлөгдсөн зээл байна.", 400);
   }
   await installmentService.updateOverdueInstallments(id);
   if (!payment_amount ||Number(payment_amount) <= 0 ||!payment_date ||!payment_method?.trim()) {
-    throw new Error("Алдаатай төлөлт.");
+    throw new AppError("Алдаатай төлөлт.", 400);
   }
   const unpaidInstallments =await installmentsRepository.findUnpaidInstallmentsByLoanId(loan.id);
   if (unpaidInstallments.length === 0) {
-    throw new Error("Төлөх хуваарь олдсонгүй.");
+    throw new AppError("Төлөх хуваарь олдсонгүй.", 404);
   }
   const niitUldsen=await installmentsRepository.getTotalRemainingAmountByLoanId(loan.id);
   if(payment_amount >niitUldsen){
-    throw new Error("Зээлийн үлдэгдлээс их дүнгээр төлөлт хийх боломжгүй");
+    throw new AppError("Зээлийн үлдэгдлээс их дүнгээр төлөлт хийх боломжгүй", 400);
   }
   const payments=[];
   const paidInstallments = [];

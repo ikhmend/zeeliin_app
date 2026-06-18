@@ -5,14 +5,15 @@ import * as installmentsRepository from "../installments/installments.repository
 import * as paymentsRepository from "../payments/payments.repository.js";
 import * as paymentsService from "../payments/payments.service.js";
 import * as installmentsService from "../installments/installments.service.js";
+import AppError from "../../utils/AppError.js";
 export async function getProfileData(userId, customerId) {
   const user = await authRepository.findUserById(userId);
   if (!user) {
-    throw new Error("Хэрэглэгчийн бүртгэл олдсонгүй.");
+    throw new AppError("Хэрэглэгчийн бүртгэл олдсонгүй.", 404);
   }
   const customerProfile =await customerRepository.findCustomerProfile(customerId);
   if (!customerProfile) {
-    throw new Error("Харилцагчийн мэдээлэл олдсонгүй.");
+    throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
   }
   return {account: {id: user.id, username: user.username, full_name: user.full_name, email: user.email, phone: user.phone,role: user.role, is_active: user.is_active,},
     profile: customerProfile,
@@ -21,7 +22,7 @@ export async function getProfileData(userId, customerId) {
 export async function updateProfile(customerId, customerData) {
   const customer = await customerRepository.findCustomer(customerId);
   if (!customer) {
-    throw new Error("Харилцагчийн мэдээлэл олдсонгүй.");
+    throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
   }
   const allowedFields = ["phone", "home_phone", "email", "current_address", "social",];
   const updateData = {};
@@ -31,24 +32,24 @@ export async function updateProfile(customerId, customerData) {
     }
   }
   if (Object.keys(updateData).length === 0) {
-    throw new Error("Шинэчлэх боломжтой мэдээлэл оруулаагүй байна.");
+    throw new AppError("Шинэчлэх боломжтой мэдээлэл оруулаагүй байна.", 400);
   }
   return await customerRepository.updateCustomer(customerId, updateData);
 }
 export async function getMyLoans(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
   if (!customer) {
-    throw new Error("Харилцагч олдсонгүй.");
+    throw new AppError("Харилцагч олдсонгүй.", 404);
   }
   return await loansRepository.findLoansByCustomerId(customerId);
 }
 export async function checkLoanOwnership(customerId, loanId) {
   const loan = await loansRepository.findLoan(loanId);
   if (!loan) {
-    throw new Error("Зээл олдсонгүй.");
+    throw new AppError("Зээл олдсонгүй.", 404);
   }
   if (Number(loan.customer_id) !== Number(customerId)) {
-    throw new Error("Энэ зээлийн мэдээллийг харах эрхгүй байна.");
+    throw new AppError("Энэ зээлийн мэдээллийг харах эрхгүй байна.", 403);
   }
   return loan;
 }
@@ -67,14 +68,14 @@ export async function getMyLoanPayments(customerId, loanId) {
 export async function getMyPayments(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
   if (!customer){ 
-    throw new Error("Харилцагч олдсонгүй.");
+    throw new AppError("Харилцагч олдсонгүй.", 404);
   }
   return await paymentsRepository.findPaymentsByCustomerId(customerId);
 }
 export async function getDashboardData(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
   if (!customer){
-    throw new Error("Харилцагч олдсонгүй.");
+    throw new AppError("Харилцагч олдсонгүй.", 404);
   }
   const loans =await loansRepository.findLoansByCustomerId(customerId);
   const activeLoans = loans.filter((loan) =>["active", "overdue"].includes(loan.loan_status));
