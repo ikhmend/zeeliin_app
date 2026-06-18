@@ -14,8 +14,10 @@ export async function findUserByLogin(login) {
     },
   });
 }
-export async function createUser(userData){
-  return await User.create(userData);
+export async function createUser(userData, transaction) {
+  return await User.create(userData, {
+    transaction,
+  });
 }
 export async function findUserByUnique({username, phone, email}){
   const ok=[];

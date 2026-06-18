@@ -14,3 +14,13 @@ export async function findCustomerProfile(id) {
     ],
   });
 }
+export async function createCustomer(customerData, transaction) {
+  return await Customer.create(customerData, {
+    transaction,
+  });
+}
+export async function findCustomerByRegisterNo(reg_no){
+  return await Customer.findOne({
+    where:{register_no: reg_no},
+  });
+}

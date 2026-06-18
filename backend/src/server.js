@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import pool from "./config/db.js";
 import "./models/index.js"
-import customerRoutes from "./routes/customer.route.js";
 import loanRoutes from "./modules/loans/loans.route.js";
 import sequelize from "./config/sequelize.js";
 import authRoutes from "./modules/auth/auth.route.js"
@@ -12,7 +11,6 @@ dotenv.config();
 const app=express();
 app.use(cors());
 app.use(express.json());
-app.use("/api/customers", customerRoutes);
 app.use("/api/loans", loanRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/me", personalRoutes);
@@ -29,13 +27,9 @@ app.get("/api/test", async (req, res)=>{
     }
 });
 const port=process.env.PORT || 5000;
-const host = '0.0.0.0';
-app.listen(port, host, ()=>{
-    console.log(`server: ${port}`);
-})
 app.listen(port, ()=>{
     console.log(`ok ${port}`);
-} )
+})
 sequelize
   .authenticate()
   .then(() => console.log("Sequelize connected"))

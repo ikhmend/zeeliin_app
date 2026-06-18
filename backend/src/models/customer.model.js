@@ -77,7 +77,7 @@ const Customer= sequelize.define(
         },
         current_address:{
             type:DataTypes.STRING,
-            allowNull:false,
+            allowNull:true,
         },
     },
     {

@@ -1,4 +1,5 @@
 import * as personalService from "./personal.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
 export async function getDashboard(req, res){
     try{
         const id= req.user.customer_id;
