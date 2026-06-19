@@ -9,12 +9,18 @@ import authRoutes from "./modules/auth/auth.route.js"
 import personalRoutes from "./modules/personal/personal.route.js";
 import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import hpp from "hpp";
+import { apiLimit } from "./middlewares/rateLimiting.js";
 dotenv.config();
 const app=express();
+app.use(helmet());
 app.use(cors({origin: "http://localhost:5173", credentials:true, }));
-app.use(express.json());
+app.use(express.json({limit: '10kb'}));
 app.use(cookieParser());
+app.use(hpp())
 // app.use("/api/loans", loanRoutes);
+app.use("/api", apiLimit);
 app.use("/api/auth", authRoutes);
 app.use("/api/me", personalRoutes);
 app.get("/", (req, res)=>{

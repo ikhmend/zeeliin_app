@@ -5,6 +5,7 @@ import * as customerRepository from "../customers/customer.repository.js"
 import sequelize from "../../config/sequelize.js";
 import AppError from "../../utility/AppError.js";
 import cookieParser from "cookie-parser";
+import crypto from "crypto";
 export async function login(loginData) {
     const {login, password} = loginData;
     if (!login?.trim() || !password?.trim()){
@@ -12,24 +13,31 @@ export async function login(loginData) {
     }
     const user = await authRepository.findUserByLogin(login);
     if (!user){
-        throw new AppError("Хэрэглэгч олдсонгүй.", 404);
+        throw new AppError("Нэвтрэх мэдээлэл буруу.", 404);
     }
     if (!user.is_active){
-        throw new AppError("Идэвхгүй хэрэглэгч байна.", 400);
+        throw new AppError("Нэвтрэх мэдээлэл буруу", 400);
     }
     const correctPass = await bcrypt.compare(password, user.password_hash);
     if (!correctPass){
-        throw new AppError("Нууц үг буруу байна.", 400);
+        throw new AppError("Нэвтрэх мэдээлэл буруу", 400);
     }
     const token = jwt.sign({id: user.id, customer_id: user.customer_id,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
-    const rtoken= jwt.sign({id: user.id,}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESHTOKEN_EXPIRES_IN || "7d"});
+    const rtoken= jwt.sign({id: user.id,}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d"});
+    const rtokenHash= crypto.createHash("sha256").update(rtoken).digest("hex"); //husnegtend hadgalna, password solihod heregtei
+    const decoded= jwt.decode(rtoken);
+    if(!decoded?.exp){
+        throw new AppError("Токены хугацаа тодорхойлж чадсангүй.", 500);
+    }
+    const expiresAt = new Date(decoded.exp*1000);
+    await authRepository.createRefreshSession({user_id: user.id, token_hash: rtokenHash, expires_at: expiresAt});
     return {token, rtoken, user: {id: user.id, customer_id: user.customer_id, username: user.username, full_name: user.full_name, email: user.email, phone: user.phone, role: user.role,},
     };
 }
 export async function getMe(userId) {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-        throw new AppError("Хэрэглэгч олдсонгүй.", 404);
+        throw new AppError("Нэвтрэх мэдээлэл буруу байна", 404);
     }
     return {id: user.id, customer_id: user.customer_id, username: user.username, full_name: user.full_name, email: user.email,phone: user.phone, role: user.role, is_active: user.is_active,};
 }
@@ -77,4 +85,75 @@ export async function register(data){
     });
     return {customer: {id: res.customer.id, first_name: res.customer.first_name, last_name: res.customer.last_name, register_no: res.customer.register_no, birth_date: res.customer.birth_date, phone: res.customer.phone, email: res.customer.email,}, user:{id: res.user.id, customer_id: res.user.customer_id, username: res.user.username, full_name: res.user.full_name, email:res.user.email, phone:res.user.phone, role:res.user.role, is_active: res.user.is_active, }};
 }
-
+export async function changeMyPassword(userId, passData) {
+  const { currentPass, newPass, confirmPass } = passData;
+  if (typeof currentPass !== "string" || typeof newPass !== "string" || typeof confirmPass !== "string" || !currentPass || !newPass || !confirmPass){
+    throw new AppError("Талбарыг бүрэн бөглөнө үү.",400);
+  }
+  const user = await authRepository.findUserById(userId);
+  if (!user) {
+    throw new AppError("Хэрэглэгч олдсонгүй.", 404);
+  }
+  const isCurrentPasswordCorrect =await bcrypt.compare(currentPass, user.password_hash);
+  if (!isCurrentPasswordCorrect) {
+    throw new AppError("Одоогийн нууц үг буруу байна.", 400);
+  }
+  if (newPass !== confirmPass) {
+    throw new AppError("Шинэ нууц үг таарахгүй байна.", 400);
+  }
+  if (newPass.length < 8) {
+    throw new AppError("Шинэ нууц үг хамгийн багадаа 8 тэмдэгттэй байна.",400);
+  }
+  const isSameAsOldPassword = await bcrypt.compare(newPass, user.password_hash);
+  if (isSameAsOldPassword) {
+    throw new AppError("Шинэ нууц үг хуучин нууц үгээс өөр байх ёстой.", 400);
+  }
+  const newHash = await bcrypt.hash(newPass, 10);
+  const updated = await authRepository.changePassword(user.id, newHash);
+  if (!updated) {
+    throw new AppError("Нууц үг солих амжилтгүй боллоо.", 500);
+  }
+  return {message: "Нууц үг амжилттай солигдлоо.",};
+}
+export async function refresh(refreshToken){
+    if(!refreshToken){
+        throw new AppError("Refresh Token байхгүй.", 404);
+    }
+    let decoded;
+    try{
+        decoded= jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    }
+    catch(error){
+        throw new AppError("Refresh Token хүчингүй эсвэл хугацаа дууссан.", 401);
+    }
+    const refreshTokenHash=crypto.createHash("sha256").update(refreshToken).digest("hex");
+    const session= await authRepository.findSessionByHash(refreshTokenHash); //eniig hiigeegui baigaa
+    if(!session){
+        throw new AppError("No session found", 404);
+    }
+    if(session.revoked_at){
+        throw new AppError("Session хүчингүй.", 401);
+    }
+    if (new Date(session.expires_at) <= new Date()) {
+        throw new AppError("Session-ийн хугацаа дууссан байна.", 401);
+    }
+    const user= await authRepository.findUserById(decoded.id);
+    if (!user) {
+        throw new AppError("Хэрэглэгч олдсонгүй.", 401);
+    }
+    if(!user.is_active){
+        throw new AppError(" Идэвхгүй хэрэглэгч", 404);
+    }
+    if (Number(session.user_id) !== Number(decoded.id)) {
+        throw new AppError("Refresh token болон session тохирохгүй байна.",401);
+    }
+    const newToken= jwt.sign({id: user.id, customer_id: user.customer_id,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
+    return {token: newToken};
+}
+export async function logout(refreshToken) {
+  if (!refreshToken) {
+    return;
+  }
+  const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+  await authRepository.revokeSessionByHash(refreshTokenHash);
+}
