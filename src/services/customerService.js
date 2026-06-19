@@ -1,14 +1,18 @@
 import api from "./api";
 
-export const getCustomers = () =>
-    api.get("/customers");
+// бүх customer авах
+export const getCustomers = () => {
+    return api.get("/customers");
+};
 
-    export const getCustomerById = (id) =>
-    api.get(`/customers/${id}`);
+// нэг customer авах
+export const getCustomerById = (id) => {
+    return api.get(`/customers/${id}`);
+};
 
-    export const searchCustomers = (
-    keyword
-    ) =>
-    api.get(
-        `/customers/search?q=${keyword}`
-    );
+// search хийх
+export const searchCustomers = (keyword) => {
+    return api.get("/customers/search", {
+    params: { q: keyword },
+    });
+};
