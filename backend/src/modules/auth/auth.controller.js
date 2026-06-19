@@ -7,7 +7,10 @@ export const getMe= asyncHandler(async (req, res) => {
 });
 export const login= asyncHandler(async (req, res) => {
     const data= await authService.login(req.body);
-    return Success(res, data, 200, "Амжилттай нэвтэрлээ");
+    res.cookie("refreshToken", data.rtoken, {
+        httpOnly:true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV==="production"? "none" : "lax", maxAge: 7*24*60*60*1000, path: "api/auth"
+    });
+    return Success(res, {token: data.token, user:data.user}, 200, "Амжилттай нэвтэрлээ.");
 });
 export const register= asyncHandler(async (req, res) => {
     const data= await authService.register(req.body);

@@ -4,6 +4,7 @@ import * as authRepository from "./auth.repository.js";
 import * as customerRepository from "../customers/customer.repository.js"
 import sequelize from "../../config/sequelize.js";
 import AppError from "../../utility/AppError.js";
+import cookieParser from "cookie-parser";
 export async function login(loginData) {
     const {login, password} = loginData;
     if (!login?.trim() || !password?.trim()){
@@ -20,8 +21,9 @@ export async function login(loginData) {
     if (!correctPass){
         throw new AppError("Нууц үг буруу байна.", 400);
     }
-    const token = jwt.sign({id: user.id, customer_id: user.customer_id, role: user.role,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
-    return {token, user: {id: user.id, customer_id: user.customer_id, username: user.username, full_name: user.full_name, email: user.email, phone: user.phone, role: user.role,},
+    const token = jwt.sign({id: user.id, customer_id: user.customer_id,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
+    const rtoken= jwt.sign({id: user.id,}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESHTOKEN_EXPIRES_IN || "7d"});
+    return {token, rtoken, user: {id: user.id, customer_id: user.customer_id, username: user.username, full_name: user.full_name, email: user.email, phone: user.phone, role: user.role,},
     };
 }
 export async function getMe(userId) {
@@ -63,7 +65,7 @@ export async function register(data){
     }
     const dugaar= await customerRepository.findCustomerByRegisterNo(regno);
     if(dugaar){
-        throw new AppError("Бүртгэлтэй регистерийн дугаар байна. ", 409)
+        throw new AppError("Бүртгэлтэй регистерийн дугаар байна.", 409)
     }
     const passHash= await bcrypt.hash(pass, 10);
     const customerData= {first_name: first_name.trim(), last_name: last_name.trim(), register_no: register_no.trim().toLowerCase(), birth_date, phone: phone, email:imeel1,}

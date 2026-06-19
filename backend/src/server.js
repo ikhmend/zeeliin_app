@@ -8,11 +8,13 @@ import sequelize from "./config/sequelize.js";
 import authRoutes from "./modules/auth/auth.route.js"
 import personalRoutes from "./modules/personal/personal.route.js";
 import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
+import cookieParser from "cookie-parser";
 dotenv.config();
 const app=express();
-app.use(cors());
+app.use(cors({origin: "http://localhost:5000", credentials:true, }));
 app.use(express.json());
-app.use("/api/loans", loanRoutes);
+app.use(cookieParser());
+// app.use("/api/loans", loanRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/me", personalRoutes);
 app.get("/", (req, res)=>{
@@ -27,12 +29,13 @@ app.get("/api/test", async (req, res)=>{
         res.status(500).json({message: "db holbolt amjiltgui", error: error.message});
     }
 });
-app.use(notFoundHandler);
-app.use(errorHandler);
 const port=process.env.PORT || 5000;
 async function start(){
-    await sequelize.authenticate();
+    await sequelize.authenticate().then(()=> console.log("sequelize on")).catch((error)=> console.log("sequelize error", error));
     app.listen(port, ()=>{
         console.log(`server on: ${port}`);
     });
 }
+app.use(notFoundHandler);
+app.use(errorHandler);
+start();

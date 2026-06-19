@@ -1,8 +1,8 @@
 import { Model, Op } from "sequelize";
 import Payment from "../../models/payments.model.js";
 import Loan from "../../models/loan.model.js";
-export async function createPayment(paymentData){
-    return await Payment.create(paymentData);
+export async function createPayment(paymentData, transaction=null){
+    return await Payment.create(paymentData, {transaction,});
 }
 export async function findPaymentsByLoanId(loanId){
     return await Payment.findAll({

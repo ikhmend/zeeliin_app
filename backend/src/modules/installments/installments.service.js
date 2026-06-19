@@ -53,11 +53,10 @@ export async function generateInstallments(loanId) {
   }
   return await installmentsRepository.createInstallments(installments);
 }
-export async function updateOverdueInstallments(loanId) {
-  const loan = await loansRepository.findLoan(loanId);
-  if (!loan) {
-    throw new AppError("Зээл олдсонгүй.", 404);
+export async function updateOverdueInstallments(loanId,transaction = null){
+  const loan = await loansRepository.findLoan(loanId,transaction);
+  if (!loan) {throw new AppError("Зээл олдсонгүй.", 404);
   }
-  const unuudur = new Date().toISOString().split("T")[0];
-  return await installmentsRepository.markOverdue(loanId, unuudur);
+  const today = new Date().toISOString().split("T")[0];
+  return await installmentsRepository.markOverdue(loanId, today,transaction);
 }

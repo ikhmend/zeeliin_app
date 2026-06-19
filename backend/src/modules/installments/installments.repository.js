@@ -22,7 +22,7 @@ export async function createInstallments(installments) {
     returning: true,
   });
 }
-export async function findUnpaidInstallmentsByLoanId(loanId) {
+export async function findUnpaidInstallmentsByLoanId(loanId, transaction=null){
   return await Installment.findAll({
     where: {
       loan_id: loanId,
@@ -34,25 +34,26 @@ export async function findUnpaidInstallmentsByLoanId(loanId) {
       },
     },
     order: [["installment_no", "ASC"]],
+    transaction, lock: transaction ? transaction.LOCK.UPDATE : undefined
   });
 }
-export async function updateInstallmentPayment(id, updateData) {
-  const installment = await Installment.findByPk(id);
-
+export async function updateInstallmentPayment(id, updateData, transaction= null) {
+  const installment = await Installment.findByPk(id, {transaction});
   if (!installment) {
     return null;
   }
-  return await installment.update(updateData);
+  return await installment.update(updateData, {transaction});
 }
-export async function getTotalRemainingAmountByLoanId(loanId) {
+export async function getTotalRemainingAmountByLoanId(loanId, transaction=null){
   const totalRemaining = await Installment.sum("remaining_amount", {
     where: {
       loan_id: loanId,
     },
+    transaction,
   });
   return Number(totalRemaining || 0);
 }
-export async function markOverdue(loanId, today) {
+export async function markOverdue(loanId, today, transaction=null) {
   const [updatedCount, updatedRows] = await Installment.update(
     {status: "overdue",},
     {where: {
@@ -68,6 +69,7 @@ export async function markOverdue(loanId, today) {
         },
       },
       returning: true,
+      transaction,
     }
   );
   return updatedRows;

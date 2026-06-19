@@ -8,8 +8,9 @@ export async function findLoans() {
     order: [["id", "desc"]],
   });
 }
-export async function findLoan(id) {
-  return await Loan.findByPk(id);
+export async function findLoan(id,transaction = null){
+  return await Loan.findByPk(id, {transaction, lock: transaction ? transaction.LOCK.UPDATE: undefined,
+  }); //lock hiij dawhar tulult hiihees hamgaalna, zeeliin mur transaction hiigdej duustal lock hiij huleene
 }
 export async function updateLoan(id, loanData) {
   const loan = await Loan.findByPk(id);
@@ -18,12 +19,12 @@ export async function updateLoan(id, loanData) {
   }
   return await loan.update(loanData);
 }
-export async function updateLoanAfterPayment(id, updateData) {
-  const loan = await Loan.findByPk(id);
+export async function updateLoanAfterPayment(id, updateData, transaction=null) {
+  const loan = await Loan.findByPk(id, {transaction,});
   if (!loan) {
     return null;
   }
-  return await loan.update(updateData);
+  return await loan.update(updateData, {transaction,});
 }
 export async function findLoansByCustomerId(customerId) {
   return await Loan.findAll({
