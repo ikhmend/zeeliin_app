@@ -2,7 +2,7 @@ import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "../installments/installments.repository.js";
 import * as paymentsRepository from "./payments.repository.js";
 import * as installmentService from "../installments/installments.service.js"
-import AppError from "../../utils/AppError.js";
+import AppError from "../../utility/AppError.js";
 export async function makePayment(id, paymentData) {
   const loan = await loansRepository.findLoan(id);
   const { payment_amount, payment_date, payment_method, received_user_id, note } = paymentData;

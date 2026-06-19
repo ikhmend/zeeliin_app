@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as authRepository from "./auth.repository.js";
 import * as customerRepository from "../customers/customer.repository.js"
 import sequelize from "../../config/sequelize.js";
-import AppError from "../../utils/AppError.js";
+import AppError from "../../utility/AppError.js";
 export async function login(loginData) {
     const {login, password} = loginData;
     if (!login?.trim() || !password?.trim()){
@@ -33,7 +33,7 @@ export async function getMe(userId) {
 }
 export async function register(data){
     const {first_name, last_name, register_no, birth_date, phone, email, username, pass, repass}= data;
-    if(!first_name?.trim() || !last_name?.trim() || !Number(phone) || !email?.trim() || !username?.trim() || !pass?.trim() || !repass?.trim() || !register_no?.trim() || !birth_date){
+    if(!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !email?.trim() || !username?.trim() || !pass?.trim() || !repass?.trim() || !register_no?.trim() || !birth_date){
         throw new AppError("Талбарыг бүрэн бөглөнө үү", 400);
     }
     if (pass !== repass){
@@ -46,15 +46,18 @@ export async function register(data){
     const utas1= phone.trim();
     const ner1= username.trim().toLowerCase();
     const regno= register_no.trim().toUpperCase();
-    const imeel= await authRepository.findUserByUnique(imeel1);
+    const imeel= await authRepository.findUserByUnique({email: imeel1});
+    if(utas1.length<8){
+        throw new AppError("Утасны дугаарыг зөв бүртгүүлнэ үү.", 400);
+    }
     if (imeel){
         throw new AppError("Бүртгэлтэй и-мейл байна.", 409);
     }
-    const utas= await authRepository.findUserByUnique(utas1);
+    const utas= await authRepository.findUserByUnique({phone: utas1});
     if (utas){
         throw new AppError("Бүртгэлтэй утасны дугаар байна.", 409);
     }
-    const ner= await authRepository.findUserByUnique(ner1);
+    const ner= await authRepository.findUserByUnique({username: ner1});
     if (ner){
         throw new AppError("Бүртгэлтэй username байна.", 409);
     }
@@ -70,6 +73,6 @@ export async function register(data){
         const user= await authRepository.createUser({...userData, customer_id: customer.id}, transaction);
         return {customer, user, }
     });
-    return {customer: {id: res.customer_id, first_name: res.customer.first_name, last_name: res.customer.last_name, register_no: res.customer.register_no, birth_date: res.customer.birth_date, phone: res.customer.phone, email: res.customer.email,}, user:{id: res.user.id, customer_id: res.user.customer_id, username: res.user.username, full_name: res.user.full_name, email:res.user.email, phone:res.user.phone, role:res.user.role, is_active: res.user.is_active, }};
+    return {customer: {id: res.customer.id, first_name: res.customer.first_name, last_name: res.customer.last_name, register_no: res.customer.register_no, birth_date: res.customer.birth_date, phone: res.customer.phone, email: res.customer.email,}, user:{id: res.user.id, customer_id: res.user.customer_id, username: res.user.username, full_name: res.user.full_name, email:res.user.email, phone:res.user.phone, role:res.user.role, is_active: res.user.is_active, }};
 }
 

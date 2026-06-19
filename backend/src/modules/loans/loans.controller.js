@@ -1,8 +1,8 @@
 import * as loansCrudService from "./loans.Crud.service.js";
 import * as loansBusinessService from "./loans.business.service.js";
 import * as installmentsService from "../installments/installments.service.js"
-import asyncHandler from "../../utils/asyncHandler.js";
-import {Success} from "../../utils/sendResponse.js";
+import asyncHandler from "../../utility/asyncHandler.js";
+import {Success} from "../../utility/sendResponse.js";
 export const getLoans= asyncHandler(async (req, res) => {
   const loans= await loansCrudService.getLoans();
   return Success(res, loans);

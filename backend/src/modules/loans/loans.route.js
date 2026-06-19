@@ -5,8 +5,8 @@ import * as paymentsController from "../payments/payments.controller.js";
 const router = express.Router();
 router.get("/", loansController.getLoans); //buh zeel harah, maybe useless
 router.post("/", loansController.createLoan); //zeel uusgeh maybe useless
-router.get("/:id/installments", installmentsController.getInstallmentsByLoanId); //zeeliin dugaaraar tulburiin huwaari awah 
-router.post("/:id/payments", paymentsController.makePayment); //tulult hiih, neg zeeliinh bish
-router.get("/:id/payments", paymentsController.getPaymentsByLoanId); //neg zeeliin tulultiin tuuh harah, hariltsagchtai hamaaralgu
-router.get("/:id", loansController.getLoan); //neg zeel awah
+router.get("/:loanId/installments", installmentsController.getInstallmentsByLoanId); //zeeliin dugaaraar tulburiin huwaari awah 
+router.post("/:loanId/payments", paymentsController.makePayment); //tulult hiih, neg zeeliinh bish
+router.get("/:loanId/payments", paymentsController.getPaymentsByLoanId); //neg zeeliin tulultiin tuuh harah, hariltsagchtai hamaaralgu
+router.get("/:loanId", loansController.getLoan); //neg zeel awah
 export default router;

@@ -1,4 +1,4 @@
-import AppError from "../../utils/AppError.js";
+import AppError from "../../utility/AppError.js";
 import * as loansRepository from "./loans.repository.js";
 export async function createLoan(loanData) {
   const {loan_code, contract_no, account_no, customer_id, branch_id, loan_product, loan_status, loan_amount, interest_rate, duration_month, created_user_id, updated_user_id, start_date,} = loanData;

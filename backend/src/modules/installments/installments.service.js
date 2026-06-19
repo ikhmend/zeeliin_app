@@ -1,4 +1,4 @@
-import AppError from "../../utils/AppError.js";
+import AppError from "../../utility/AppError.js";
 import * as loansRepository from "../loans/loans.repository.js";
 import * as installmentsRepository from "./installments.repository.js";
 function roundTo(value) {

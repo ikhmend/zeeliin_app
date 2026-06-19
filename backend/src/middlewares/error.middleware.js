@@ -1,4 +1,4 @@
-import AppError from "../utils/AppError.js";
+import AppError from "../utility/AppError.js";
 export function notFoundHandler(req, res, next) {
   next(new AppError(
       `${req.method} ${req.originalUrl} endpoint олдсонгүй.`,

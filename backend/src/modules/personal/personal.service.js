@@ -5,7 +5,7 @@ import * as installmentsRepository from "../installments/installments.repository
 import * as paymentsRepository from "../payments/payments.repository.js";
 import * as paymentsService from "../payments/payments.service.js";
 import * as installmentsService from "../installments/installments.service.js";
-import AppError from "../../utils/AppError.js";
+import AppError from "../../utility/AppError.js";
 export async function getProfileData(userId, customerId) {
   const user = await authRepository.findUserById(userId);
   if (!user) {

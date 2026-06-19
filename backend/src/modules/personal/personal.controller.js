@@ -1,6 +1,6 @@
 import * as personalService from "./personal.service.js";
-import asyncHandler from "../../utils/asyncHandler.js";
-import { Success } from "../../utils/sendResponse.js";
+import asyncHandler from "../../utility/asyncHandler.js";
+import { Success } from "../../utility/sendResponse.js";
 export const getDashboard = asyncHandler(async (req, res) => {
     const data = await personalService.getDashboardData(req.user.customer_id);
     return Success(res, data);

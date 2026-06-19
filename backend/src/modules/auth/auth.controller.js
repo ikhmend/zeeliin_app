@@ -1,6 +1,6 @@
 import * as authService from "./auth.service.js"
-import asyncHandler from "../../utils/asyncHandler.js";
-import {Success} from "../../utils/sendResponse.js";
+import asyncHandler from "../../utility/asyncHandler.js";
+import {Success} from "../../utility/sendResponse.js";
 export const getMe= asyncHandler(async (req, res) => {
     const data= await authService.getMe(req.user.id);
     return Success(res, data);

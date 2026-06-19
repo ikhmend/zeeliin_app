@@ -30,10 +30,9 @@ app.get("/api/test", async (req, res)=>{
 app.use(notFoundHandler);
 app.use(errorHandler);
 const port=process.env.PORT || 5000;
-app.listen(port, ()=>{
-    console.log(`ok ${port}`);
-})
-sequelize
-  .authenticate()
-  .then(() => console.log("Sequelize connected"))
-  .catch((error) => console.error("Sequelize error:", error));
+async function start(){
+    await sequelize.authenticate();
+    app.listen(port, ()=>{
+        console.log(`server on: ${port}`);
+    });
+}
