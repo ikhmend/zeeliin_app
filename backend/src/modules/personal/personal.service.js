@@ -20,18 +20,48 @@ export async function getProfileData(userId, customerId) {
   };
 }
 export async function updateProfile(customerId, customerData) {
-  const customer = await customerRepository.findCustomer(customerId);
+  const customer =
+    await customerRepository.findCustomer(customerId);
+
   if (!customer) {
-    throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
+    throw new AppError(
+      "Харилцагчийн мэдээлэл олдсонгүй.",
+      404
+    );
   }
-  const allowedFields = ["phone", "home_phone", "email", "current_address", "social",];
+
+  const allowedFields = [
+    "phone",
+    "home_phone",
+    "email",
+    "social",
+    "activity_dir",
+    "business_type",
+    "education",
+    "profession",
+    "official_address",
+    "current_address",
+  ];
+
   const updateData = {};
+
   for (const field of allowedFields) {
     if (customerData[field] !== undefined) {
       updateData[field] = customerData[field];
     }
   }
-  return await customerRepository.updateCustomer(customerId, updateData);
+
+  if (Object.keys(updateData).length === 0) {
+    throw new AppError(
+      "Өөрчлөх мэдээлэл олдсонгүй.",
+      400
+    );
+  }
+
+  return await customerRepository.updateCustomer(
+    customerId,
+    updateData
+  );
 }
 export async function getMyLoans(customerId) {
   const customer = await customerRepository.findCustomer(customerId);

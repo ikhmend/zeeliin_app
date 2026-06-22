@@ -2,55 +2,17 @@ import express from "express";
 import * as personalController from "./personal.controller.js";
 import { authMiddleware } from "../auth/auth.middleware.js";
 import { paymentLimit } from "../../middlewares/rateLimiting.js";
-import {
-  loanIdSchema,
-  makePaymentSchema,
-  updateProfileSchema,
-} from "./personal.validation.js";
+import {loanIdSchema, makePaymentSchema, updateProfileSchema,} from "./personal.validation.js";
 import { validateRequest } from "../../middlewares/validation.js";
-
 const router = express.Router();
-
 router.use(authMiddleware);
-
-router.get(
-  "/dashboard",
-  personalController.getDashboard
-);
-
-router.get(
-  "/profile",
-  personalController.getProfile
-);
-
-router.put(
-  "/profile",
-  validateRequest(updateProfileSchema),
-  personalController.updateProfile
-);
-
-router.get(
-  "/payments",
-  personalController.getMyPayments
-);
-
-router.get(
-  "/loans",
-  personalController.getMyLoans
-);
-
-router.get(
-  "/loans/:loanId/installments",
-  validateRequest(loanIdSchema),
-  personalController.getMyLoanInstallments
-);
-
-router.get(
-  "/loans/:loanId/payments",
-  validateRequest(loanIdSchema),
-  personalController.getMyLoanPayments
-);
-
+router.get("/dashboard",personalController.getDashboard);
+router.get("/profile", personalController.getProfile);
+router.put("/profile", validateRequest(updateProfileSchema), personalController.updateProfile);
+router.get("/payments", personalController.getMyPayments);
+router.get("/loans", personalController.getMyLoans);
+router.get("/loans/:loanId/installments", validateRequest(loanIdSchema), personalController.getMyLoanInstallments);
+router.get("/loans/:loanId/payments", validateRequest(loanIdSchema), personalController.getMyLoanPayments);
 router.post(
   "/loans/:loanId/payments",
   paymentLimit,
