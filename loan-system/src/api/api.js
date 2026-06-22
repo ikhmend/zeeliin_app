@@ -5,7 +5,6 @@ const api = axios.create({
     // cookie accept
     withCredentials: true, 
 });
-
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {
