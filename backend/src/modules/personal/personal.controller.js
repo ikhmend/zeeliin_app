@@ -18,7 +18,7 @@ export const getMyLoans= asyncHandler(async (req, res) => {
     return Success(res, data);
 });
 export const getMyLoanById= asyncHandler(async(req, res)=>{
-    const data= await personalService.getMyLoanById(req.user.customer_id, req.params.loanId);
+    const data= await personalService.getMyLoanById(req.user.customer_id, req.validated.params);
     return Success(res, data);
 });
 export const getMyLoanInstallments = asyncHandler(async (req, res) => {

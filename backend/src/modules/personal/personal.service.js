@@ -88,10 +88,7 @@ export async function getDashboardData(customerId) {
     await installmentsService.updateOverdueInstallments(loan.id);
   }
   const remainingAmounts = await Promise.all(
-    activeLoans.map((loan) =>
-      installmentsRepository.getTotalRemainingAmountByLoanId(
-        loan.id
-      )
+    activeLoans.map((loan) => installmentsRepository.getTotalRemainingAmountByLoanId(loan.id)
     )
   );
   const totalOutstandingAmount = remainingAmounts.reduce((sum, amount)=>sum + Number(amount || 0), 0);

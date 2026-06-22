@@ -8,9 +8,9 @@ import cookieParser from "cookie-parser";
 import crypto from "crypto";
 export async function login(loginData) {
     const {login, password} = loginData;
-    if (!login?.trim() || !password?.trim()){
-        throw new AppError("Нэвтрэх нэр болон нууц үг оруулна уу.", 400);
-    }
+    // if (!login?.trim() || !password?.trim()){
+    //     throw new AppError("Нэвтрэх нэр болон нууц үг оруулна уу.", 400);
+    // }
     const user = await authRepository.findUserByLogin(login);
     if (!user){
         throw new AppError("Нэвтрэх мэдээлэл буруу.", 404);
@@ -87,9 +87,6 @@ export async function register(data){
 }
 export async function changeMyPassword(userId, passData) {
   const { currentPass, newPass, confirmPass } = passData;
-  if (typeof currentPass !== "string" || typeof newPass !== "string" || typeof confirmPass !== "string" || !currentPass || !newPass || !confirmPass){
-    throw new AppError("Талбарыг бүрэн бөглөнө үү.",400);
-  }
   const user = await authRepository.findUserById(userId);
   if (!user) {
     throw new AppError("Хэрэглэгч олдсонгүй.", 404);
@@ -97,12 +94,6 @@ export async function changeMyPassword(userId, passData) {
   const isCurrentPasswordCorrect =await bcrypt.compare(currentPass, user.password_hash);
   if (!isCurrentPasswordCorrect) {
     throw new AppError("Одоогийн нууц үг буруу байна.", 400);
-  }
-  if (newPass !== confirmPass) {
-    throw new AppError("Шинэ нууц үг таарахгүй байна.", 400);
-  }
-  if (newPass.length < 8) {
-    throw new AppError("Шинэ нууц үг хамгийн багадаа 8 тэмдэгттэй байна.",400);
   }
   const isSameAsOldPassword = await bcrypt.compare(newPass, user.password_hash);
   if (isSameAsOldPassword) {
