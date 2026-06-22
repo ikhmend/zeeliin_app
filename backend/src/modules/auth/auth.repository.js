@@ -73,3 +73,15 @@ export async function revokeSessionByHash(tokenHash) {
   await session.save();
   return session;
 }
+export async function revokeAllSessions(userId){
+  const sessions = await Session.update({
+    revoked_at: new Date(), 
+  },
+  {
+    where: {
+      user_id: userId,
+      revoked_at:null
+    }
+  }
+);
+}

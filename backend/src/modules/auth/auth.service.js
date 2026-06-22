@@ -110,6 +110,7 @@ export async function changeMyPassword(userId, passData) {
   }
   const newHash = await bcrypt.hash(newPass, 10);
   const updated = await authRepository.changePassword(user.id, newHash);
+  const revoked= await authRepository.revokeAllSessions(user.id);
   if (!updated) {
     throw new AppError("Нууц үг солих амжилтгүй боллоо.", 500);
   }
@@ -142,7 +143,7 @@ export async function refresh(refreshToken){
         throw new AppError("Хэрэглэгч олдсонгүй.", 401);
     }
     if(!user.is_active){
-        throw new AppError(" Идэвхгүй хэрэглэгч", 404);
+        throw new AppError("Идэвхгүй хэрэглэгч", 404);
     }
     if (Number(session.user_id) !== Number(decoded.id)) {
         throw new AppError("Refresh token болон session тохирохгүй байна.",401);
