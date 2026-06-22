@@ -33,7 +33,7 @@ export async function findUnpaidInstallmentsByLoanId(loanId, transaction=null){
         [Op.in]: ["pending", "partial", "overdue"],
       },
     },
-    order: [["installment_no", "ASC"]],
+    order: [["installment_no", "asc"]],
     transaction, lock: transaction ? transaction.LOCK.UPDATE : undefined
   });
 }

@@ -18,15 +18,15 @@ export const getMyLoans= asyncHandler(async (req, res) => {
     return Success(res, data);
 });
 export const getMyLoanById= asyncHandler(async(req, res)=>{
-    const data= await personalService.getMyLoanById(req.user.customer_id, req.validated.params);
+    const data= await personalService.getMyLoanById(req.user.customer_id, req.validated.params.loanId);
     return Success(res, data);
 });
 export const getMyLoanInstallments = asyncHandler(async (req, res) => {
-    const data= await personalService.getMyLoanInstallments(req.user.customer_id, req.params.loanId);
+    const data= await personalService.getMyLoanInstallments(req.user.customer_id, req.validated.params.loanId);
     return Success(res, data);
 });
 export const getMyLoanPayments= asyncHandler(async (req, res) => {
-    const data= await personalService.getMyLoanPayments(req.user.customer_id, req.params.loanId);
+    const data= await personalService.getMyLoanPayments(req.user.customer_id, req.validated.params.loanId);
     return Success(res, data);
 });
 export const getMyPayments= asyncHandler(async (req, res) => {
@@ -34,6 +34,6 @@ export const getMyPayments= asyncHandler(async (req, res) => {
     return Success(res, data);
 });
 export const makeMyPayment= asyncHandler(async (req, res) => {
-    const data= await personalService.makeMyPayment(req.user.customer_id, req.params.loanId, req.validated.body);
+    const data= await personalService.makeMyPayment(req.user.customer_id, req.validated.params.loanId, req.validated.body);
     return Success(res, data, 201, "Төлөлт амжилттай.");
 });

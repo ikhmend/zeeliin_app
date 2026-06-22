@@ -11,12 +11,7 @@ export function validateRequest(schema) {
         field: issue.path.join("."),
         message: issue.message,
       }));
-      return next(
-        new AppError(
-          "Оруулсан мэдээлэл буруу байна.",
-          400,
-          errors
-        )
+      return next(new AppError("Оруулсан мэдээлэл буруу байна.", 400, errors)
       );
     }
     req.validated = result.data;

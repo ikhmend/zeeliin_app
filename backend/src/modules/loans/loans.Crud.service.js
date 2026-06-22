@@ -24,7 +24,6 @@ export async function updateLoan(id, loanData) {
   }
   return await loansRepository.updateLoan(id, loanData);
 }
-
 export async function searchLoans(keyword) {
   if (!keyword?.trim()) {
     throw new AppError("Хайх түлхүүр үг оруулна уу.", 400);
@@ -37,7 +36,6 @@ export async function getLoansByCustomerId(customerId) {
   }
   return await loansRepository.findLoansByCustomerId(customerId);
 }
-
 export async function getLoansByProduct(loanProduct) {
   if (!loanProduct?.trim()) {
     throw new AppError("Зээлийн бүтээгдэхүүн оруулна уу.", 400);
