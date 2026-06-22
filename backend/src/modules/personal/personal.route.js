@@ -13,17 +13,6 @@ router.get("/payments", personalController.getMyPayments);
 router.get("/loans", personalController.getMyLoans);
 router.get("/loans/:loanId/installments", validateRequest(loanIdSchema), personalController.getMyLoanInstallments);
 router.get("/loans/:loanId/payments", validateRequest(loanIdSchema), personalController.getMyLoanPayments);
-router.post(
-  "/loans/:loanId/payments",
-  paymentLimit,
-  validateRequest(makePaymentSchema),
-  personalController.makeMyPayment
-);
-
-router.get(
-  "/loans/:loanId",
-  validateRequest(loanIdSchema),
-  personalController.getMyLoanById
-);
-
+router.post("/loans/:loanId/payments", paymentLimit, validateRequest(makePaymentSchema), personalController.makeMyPayment);
+router.get("/loans/:loanId", validateRequest(loanIdSchema), personalController.getMyLoanById);
 export default router;
