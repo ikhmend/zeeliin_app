@@ -49,18 +49,18 @@ export default function Loans() {
     }
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="page-container">
             <h1 style={styles.title}>Миний зээлүүд</h1>
 
             {loans.length === 0 ? (
-                <div style={styles.emptyBox}>
+                <div style={styles.emptyBox} className="responsive-card">
                     <p>Таны нэр дээр зээл бүртгэгдээгүй байна.</p>
                 </div>
             ) : (
                 <div style={styles.list}>
                     {loans.map((loan) => (
-                        <div key={loan.id} style={styles.card}>
-                            <div style={styles.cardHeader}>
+                        <div key={loan.id} style={styles.card} className="responsive-card">
+                            <div style={styles.cardHeader} className="responsive-card-header">
                                 <div>
                                     <h3 style={styles.loanCode}>{loan.loan_code}</h3>
                                     <p style={styles.contractNo}>Гэрээ: {loan.contract_no}</p>
@@ -71,7 +71,7 @@ export default function Loans() {
                                 </span>
                             </div>
 
-                            <div style={styles.infoGrid}>
+                            <div style={styles.infoGrid} className="responsive-grid loan-info-grid">
                                 <div>
                                     <p style={styles.label}>Зээлийн төрөл</p>
                                     <p style={styles.value}>{getProductName(loan.loan_product)}</p>
@@ -118,7 +118,7 @@ export default function Loans() {
                             </div>
 
                             {/* Action Button Section fixed inside the map block */}
-                            <div style={styles.cardActions}>
+                            <div style={styles.cardActions} className="responsive-actions">
                                 <button
                                     style={styles.detailButton}
                                     onClick={() => navigate(`/loans/${loan.id}`)}

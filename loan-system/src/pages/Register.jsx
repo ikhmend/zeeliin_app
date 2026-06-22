@@ -4,7 +4,7 @@ import styles from "../styles/loginStyles";
 import { registerUser } from "../services/authService";
 
 export default function Register() {
-    // Бэкэндийн шаардаж буй бүх талбарын State-үүд
+    
     const [lastName, setLastName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [registerNo, setRegisterNo] = useState("");
@@ -72,8 +72,8 @@ export default function Register() {
     };
 
     return (
-        <div style={styles.wrapper}>
-            <div style={styles.left}>
+        <div style={styles.wrapper} className="auth-wrapper">
+            <div style={styles.left} className="auth-left">
                 <div style={styles.tagRow}>
                     <div style={styles.tagIcon}>LC</div>
                     <div style={styles.tag}>SMART FINANCING</div>
@@ -83,8 +83,8 @@ export default function Register() {
             </div>
 
             {/* Олон талбартай болсон тул स्क्रोल хийж бодохоор style нэмэв */}
-            <div style={{ ...styles.right, overflowY: "auto", padding: "40px 20px" }}>
-                <div style={styles.card}>
+            <div style={{ ...styles.right, overflowY: "auto", padding: "40px 20px" }} className="auth-right">
+                <div style={styles.card} className="auth-card">
                     <div style={styles.logoRow}>
                         <span style={styles.logoIcon}>LC</span> Loan Corp
                     </div>

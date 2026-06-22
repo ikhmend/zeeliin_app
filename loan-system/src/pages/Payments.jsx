@@ -172,15 +172,15 @@ export default function Payments() {
     }
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="page-container">
 
-            <div style={styles.cards}>
-                <div style={styles.card}>
+            <div style={styles.cards} className="responsive-cards two-card-grid">
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Нийт төлөлт</p>
                     <h2 style={styles.cardValue}>{payments.length}</h2>
                 </div>
 
-                <div style={styles.card}>
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Нийт төлсөн дүн</p>
                     <h2 style={styles.cardValue}>
                         {formatMoney(totalPaidAmount, "MNT")}
@@ -188,8 +188,8 @@ export default function Payments() {
                 </div>
             </div>
 
-            <div style={styles.section}>
-                <div style={styles.sectionHeader}>
+            <div style={styles.section} className="responsive-card responsive-section">
+                <div style={styles.sectionHeader} className="responsive-card-header">
                     <div>
                         <h3 style={styles.boxTitle}>Төлөлтийн жагсаалт</h3>
                         <p style={styles.sectionSubText}>
@@ -204,8 +204,8 @@ export default function Payments() {
                     </p>
                 ) : (
                     <>
-                        <div style={styles.table}>
-                            <div style={styles.tableHeader5}>
+                        <div style={styles.table} className="responsive-table">
+                            <div style={styles.tableHeader5} className="responsive-table-row table-5">
                                 <span>Огноо</span>
                                 <span>Зээл</span>
                                 <span>Төлсөн дүн</span>
@@ -282,7 +282,7 @@ export default function Payments() {
                                 return (
                                     <div
                                         key={payment.id || index}
-                                        style={styles.tableRow5}
+                                        style={styles.tableRow5} className="responsive-table-row table-5"
                                     >
                                         <span>{formatDate(paymentDate)}</span>
 
@@ -306,7 +306,7 @@ export default function Payments() {
                             })}
                         </div>
 
-                        <div style={styles.pagination}>
+                        <div style={styles.pagination} className="responsive-pagination">
                             <button
                                 style={{
                                     ...styles.pageButton,

@@ -5,9 +5,9 @@ import {
     DollarOutlined,
     CreditCardOutlined,
     SettingOutlined,
-    } from "@ant-design/icons";
+} from "@ant-design/icons";
 
-    export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     const menu = [
         { name: "Dashboard", path: "/dashboard", icon: <HomeOutlined /> },
         { name: "My Loan", path: "/loans", icon: <DollarOutlined /> },
@@ -17,31 +17,47 @@ import {
     ];
 
     return (
-        <div style={styles.sidebar}>
-        <div style={styles.logo}>Loan-System</div>
+        <div
+            style={styles.sidebar}
+            className={`app-sidebar ${isOpen ? "open" : ""}`}
+        >
+            <div style={styles.sidebarTop}>
+                <div style={styles.logo}>Loan-System</div>
 
-        <div style={styles.menu}>
-            {menu.map((item) => (
-            <NavLink
-                key={item.name}
-                to={item.path}
-                style={({ isActive }) => ({
-                ...styles.item,
-                background: isActive ? "#1d4ed8" : "transparent",
-                color: "#fff",
-                textDecoration: "none",
-                })}
-            >
-                <span style={{ marginRight: 10 }}>{item.icon}</span>
-                {item.name}
-            </NavLink>
-            ))}
-        </div>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    style={styles.closeButton}
+                    className="sidebar-close"
+                    aria-label="Close menu"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div style={styles.menu}>
+                {menu.map((item) => (
+                    <NavLink
+                        key={item.name}
+                        to={item.path}
+                        onClick={onClose}
+                        style={({ isActive }) => ({
+                            ...styles.item,
+                            background: isActive ? "#1d4ed8" : "transparent",
+                            color: "#fff",
+                            textDecoration: "none",
+                        })}
+                    >
+                        <span style={{ marginRight: 10 }}>{item.icon}</span>
+                        {item.name}
+                    </NavLink>
+                ))}
+            </div>
         </div>
     );
-    }
+}
 
-    const styles = {
+const styles = {
     sidebar: {
         width: 240,
         height: "100vh",
@@ -53,10 +69,26 @@ import {
         boxSizing: "border-box",
     },
 
+    sidebarTop: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 30,
+    },
+
     logo: {
         fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 30,
+    },
+
+    closeButton: {
+        display: "none",
+        border: "none",
+        background: "transparent",
+        color: "#fff",
+        fontSize: "30px",
+        lineHeight: 1,
+        cursor: "pointer",
     },
 
     menu: {

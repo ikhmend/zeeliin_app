@@ -159,11 +159,11 @@ export default function Profile() {
     }
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="page-container">
             {error && <div style={styles.errorBox}>{error}</div>}
             {success && <div style={styles.successBox}>{success}</div>}
-            <div style={styles.headerBlock}>
-                <div style={styles.userInfoWrapper}>
+            <div style={styles.headerBlock} className="responsive-card profile-header">
+                <div style={styles.userInfoWrapper} className="responsive-card-header">
                     <div style={styles.avatarCircle}>
                         {getInitialLetter()}
                     </div>
@@ -206,10 +206,10 @@ export default function Profile() {
             {!editMode ? (
                 <>
                     {/* ДАНСНЫ МЭДЭЭЛЭЛ КАРТ */}
-                    <div style={styles.sectionCard}>
+                    <div style={styles.sectionCard} className="responsive-card">
                         <h3 style={styles.sectionTitle}>Дансны мэдээлэл</h3>
 
-                        <div style={styles.infoGrid}>
+                        <div style={styles.infoGrid} className="responsive-grid two-col-grid">
                             <InfoRow
                                 label="Хэрэглэгчийн нэр"
                                 value={account.username || "-"}
@@ -241,10 +241,10 @@ export default function Profile() {
                             />
                         </div>
                     </div>
-                    <div style={styles.sectionCard}>
+                    <div style={styles.sectionCard} className="responsive-card">
                         <h3 style={styles.sectionTitle}>Хувийн мэдээлэл</h3>
 
-                        <div style={styles.infoGrid}>
+                        <div style={styles.infoGrid} className="responsive-grid two-col-grid">
                             <InfoRow
                                 label="Харилцагчийн код"
                                 value={profile.customer_code || "-"}
@@ -286,12 +286,12 @@ export default function Profile() {
                             />
                         </div>
                     </div>
-                    <div style={styles.sectionCard}>
+                    <div style={styles.sectionCard} className="responsive-card">
                         <h3 style={styles.sectionTitle}>
                             Холбоо барих, ажил мэргэжил
                         </h3>
 
-                        <div style={styles.infoGrid}>
+                        <div style={styles.infoGrid} className="responsive-grid two-col-grid">
                             <InfoRow
                                 label="Утас"
                                 value={profile.phone || "-"}
@@ -345,11 +345,11 @@ export default function Profile() {
                     </div>
                 </>
             ) : (
-                <div style={styles.sectionCard}>
+                <div style={styles.sectionCard} className="responsive-card">
                     <h3 style={styles.sectionTitle}>Мэдээлэл шинэчлэх</h3>
 
                     <form onSubmit={handleSubmit} style={styles.form}>
-                        <div style={styles.inputGrid}>
+                        <div style={styles.inputGrid} className="responsive-grid two-col-grid">
                             <FormInput
                                 label="Имэйл"
                                 name="email"
@@ -433,7 +433,7 @@ export default function Profile() {
                             />
                         </div>
 
-                        <div style={styles.actions}>
+                        <div style={styles.actions} className="responsive-actions">
                             <button
                                 type="button"
                                 style={styles.cancelButton}
@@ -460,7 +460,7 @@ export default function Profile() {
 
 function InfoRow({ label, value }) {
     return (
-        <div style={styles.infoRow}>
+        <div style={styles.infoRow} className="responsive-row">
             <span style={styles.infoLabel}>{label}</span>
             <strong style={styles.infoValue}>{value}</strong>
         </div>

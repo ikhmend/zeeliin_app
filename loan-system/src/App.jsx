@@ -11,6 +11,7 @@ import Payments from "./pages/Payments";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Register from "./pages/Register";
+import {logoutApi} from "./api/authApi";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -21,19 +22,27 @@ export default function App() {
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+
+    try {
+      await logoutApi();
+
+    } catch (error) {
+
+      console.error("Logout failed:", error);
+    } finally {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setIsLoggedIn(false);
+    }
   };
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Үндсэн хуудас руу орвол шууд login руу үсрэнэ */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Нэвтрэх хуудас */}
         <Route
           path="/login"
           element={
@@ -44,8 +53,6 @@ export default function App() {
             )
           }
         />
-
-        {/* БҮРТГҮҮЛЭХ ХУУДАС (Энд хамгаалалтаас гаргаж тавьлаа) */}
         <Route
           path="/register"
           element={
@@ -57,7 +64,7 @@ export default function App() {
           }
         />
 
-        {/* Зөвхөн нэвтэрсэн хэрэглэгч үзэх хэсэг */}
+        {/* nevtersen herglegchid*/}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout onLogout={handleLogout} />}>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -65,11 +72,11 @@ export default function App() {
             <Route path="/loans/:loanId" element={<LoanDetail />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<Settings onLogout={handleLogout} />} />
+            
           </Route>
         </Route>
         
-        {/* Буруу зам уулзвал login руу буцаах (Заавал биш ч байхад зүгээр) */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

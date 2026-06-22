@@ -47,9 +47,9 @@ export default function Login({ onLogin }) {
     };
 
     return (
-        <div style={styles.wrapper}>
+        <div style={styles.wrapper} className="auth-wrapper">
 
-            <div style={styles.left}>
+            <div style={styles.left} className="auth-left">
                 <div style={styles.tagRow}>
                     <div style={styles.tagIcon}>LC</div>
                     <div style={styles.tag}>SMART FINANCING</div>
@@ -61,8 +61,8 @@ export default function Login({ onLogin }) {
                     From personal loans to business needs
                 </p>
             </div>
-            <div style={styles.right}>
-                <div style={styles.card}>
+            <div style={styles.right} className="auth-right">
+                <div style={styles.card} className="auth-card">
                     <div style={styles.logoRow}>
                         <span style={styles.logoIcon}>LC</span> Loan Corp
                     </div>

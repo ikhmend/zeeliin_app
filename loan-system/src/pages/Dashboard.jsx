@@ -67,7 +67,7 @@ export default function Dashboard() {
     const { customer, loan, schedule = [], recentPayments = [] } = data;
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="page-container">
             <h1 style={styles.mainTitle}>
                 Сайн байна уу, {customer.fullName}
             </h1>
@@ -76,29 +76,29 @@ export default function Dashboard() {
                 Та өөрийн зээл болон төлөлтийн мэдээллээ хялбар байдлаар удирдаарай.
             </p>
 
-            <div style={styles.cards}>
-                <div style={styles.card}>
+            <div style={styles.cards} className="responsive-cards dashboard-cards">
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Үлдэгдэл төлбөр/Нийт зээл/</p>
                     <h2 style={styles.cardValue}>
                         {formatMoney(loan.remainingAmount)}
                     </h2>
                 </div>
 
-                <div style={styles.card}>
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Дараагийн төлөлт</p>
                     <h2 style={styles.cardValue}>
                         {formatMoney(loan.monthlyPayment)}
                     </h2>
                 </div>
 
-                <div style={styles.card}>
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Төлөх огноо</p>
                     <h2 style={styles.cardValue}>
                         {loan.nextPaymentDate || "-"}
                     </h2>
                 </div>
 
-                <div style={styles.card}>
+                <div style={styles.card} className="responsive-card">
                     <p style={styles.cardLabel}>Идэвхтэй зээл</p>
                     <h2 style={styles.cardValue}>
                         {loan.activeLoansCount || 0}
@@ -106,7 +106,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div style={styles.paymentAlert}>
+            <div style={styles.paymentAlert} className="responsive-alert">
                 <div>
                     <h3 style={styles.alertTitle}>
                         Дараагийн төлөлт ойртож байна
@@ -126,8 +126,8 @@ export default function Dashboard() {
                 </button>
             </div>
 
-            <div style={styles.grid}>
-                <div style={styles.box}>
+            <div style={styles.grid} className="responsive-grid two-col-grid">
+                <div style={styles.box} className="responsive-card responsive-box">
                     <h3 style={styles.boxTitle}>Төлөлтийн хуваарь</h3>
 
                     {schedule.length === 0 ? (
@@ -136,7 +136,7 @@ export default function Dashboard() {
                         </p>
                     ) : (
                         schedule.slice(0, 3).map((item, index) => (
-                            <div key={index} style={styles.row}>
+                            <div key={index} style={styles.row} className="responsive-row">
                                 <span style={styles.rowDate}>
                                     {formatDate(item.due_date)}
                                 </span>
@@ -156,7 +156,7 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                <div style={styles.box}>
+                <div style={styles.box} className="responsive-card responsive-box">
                     <h3 style={styles.boxTitle}>Сүүлд хийсэн төлөлтүүд</h3>
 
                     {recentPayments.length === 0 ? (
@@ -165,7 +165,7 @@ export default function Dashboard() {
                         </p>
                     ) : (
                         recentPayments.slice(0, 3).map((item, index) => (
-                            <div key={index} style={styles.row}>
+                            <div key={index} style={styles.row} className="responsive-row">
                                 <span style={styles.rowDate}>
                                     {formatDate(item.payment_date)}
                                 </span>
