@@ -31,9 +31,6 @@ export async function updateProfile(customerId, customerData) {
       updateData[field] = customerData[field];
     }
   }
-  if (Object.keys(updateData).length === 0) {
-    throw new AppError("Шинэчлэх боломжтой мэдээлэл оруулаагүй байна.", 400);
-  }
   return await customerRepository.updateCustomer(customerId, updateData);
 }
 export async function getMyLoans(customerId) {
