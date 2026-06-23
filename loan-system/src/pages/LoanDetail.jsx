@@ -1,8 +1,12 @@
+//LoanDetail => thuvaariin ehnii tulbur tuluhni idehjsnni 
+
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
     getLoanDetail,
     getLoanInstallments,
+    makeLoanPayment,
 } from "../api/LoansApi";
 
 const PAGE_SIZE = 5;
@@ -16,6 +20,8 @@ export default function LoanDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    // payingId state-ийг энд нэмж зарлав
+    const [payingId, setPayingId] = useState(null); 
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -72,16 +78,18 @@ export default function LoanDetail() {
     const getInstallmentStatusName = (status) => {
         if (status === "paid") return "Төлсөн";
         if (status === "pending") return "Төлөх";
+        if (status === "partial") return "Хэсэгчлэн төлсөн";
         if (status === "overdue") return "Хугацаа хэтэрсэн";
         return status || "-";
     };
 
+    // Давхардсан болон дутуу хаалттай байсан функцийг цэгцлэв
     const getInstallmentStatusStyle = (status) => {
         const base = {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            minWidth: "92px",
+            minWidth: "110px",
             padding: "7px 12px",
             borderRadius: "999px",
             fontSize: "12px",
@@ -93,6 +101,14 @@ export default function LoanDetail() {
                 ...base,
                 background: "#dcfce7",
                 color: "#15803d",
+            };
+        }
+
+        if (status === "partial") {
+            return {
+                ...base,
+                background: "#fef3c7",
+                color: "#92400e",
             };
         }
 
@@ -109,6 +125,77 @@ export default function LoanDetail() {
             background: "#dbeafe",
             color: "#1d4ed8",
         };
+    };
+
+    const getInstallmentRemainingAmount = (installment) => {
+        return Number(
+            installment.remaining_amount ??
+            installment.remainingAmount ??
+            installment.total_amount ??
+            installment.totalAmount ??
+            0
+        );
+    };
+
+    const getFirstPayableInstallment = () => {
+        return installments.find((item) => {
+            const status =
+                item.status ||
+                item.installment_status ||
+                item.installmentStatus;
+
+            const remainingAmount = getInstallmentRemainingAmount(item);
+
+            return status !== "paid" && remainingAmount > 0;
+        });
+    };
+
+    const handlePayInstallment = async (installment) => {
+        const remainingAmount = getInstallmentRemainingAmount(installment);
+
+        if (!remainingAmount || remainingAmount <= 0) {
+            alert("Төлөх дүн олдсонгүй.");
+            return;
+        }
+
+        const ok = window.confirm(
+            `${formatMoney(remainingAmount, loan?.currency || "MNT")} төлөх үү?`
+        );
+
+        if (!ok) return;
+
+        try {
+            setPayingId(installment.id);
+
+            const today = new Date().toISOString().slice(0, 10);
+
+            await makeLoanPayment(loanId, {
+                payment_amount: remainingAmount,
+                payment_date: today,
+                payment_method: "mock",
+                note: `Customer web mock payment. Installment ID: ${installment.id}`,
+            });
+
+            const [loanData, installmentData] = await Promise.all([
+                getLoanDetail(loanId),
+                getLoanInstallments(loanId),
+            ]);
+
+            setLoan(loanData);
+            setInstallments(installmentData || []);
+        } catch (err) {
+            console.error("Make payment error:", err);
+            console.error("Make payment response:", err.response?.data);
+
+            alert(
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                err.message ||
+                "Төлбөр хийх үед алдаа гарлаа"
+            );
+        } finally {
+            setPayingId(null);
+        }
     };
 
     const totalPages = Math.max(1, Math.ceil(installments.length / PAGE_SIZE));
@@ -371,11 +458,12 @@ export default function LoanDetail() {
                 ) : (
                     <>
                         <div style={styles.table}>
-                            <div style={styles.tableHeader4}>
+                            <div style={styles.tableHeader5}>
                                 <span>Огноо</span>
                                 <span>Төлөх дүн</span>
                                 <span>Үлдэгдэл</span>
                                 <span>Төлөв</span>
+                                <span>Үйлдэл</span>
                             </div>
 
                             {paginatedInstallments.map((item, index) => {
@@ -405,8 +493,17 @@ export default function LoanDetail() {
                                     item.installment_status ||
                                     item.installmentStatus;
 
+                                const firstPayableInstallment = getFirstPayableInstallment();
+
+                                const isPaid = status === "paid";
+                                const isPartial = status === "partial";
+
+                                const canPay =
+                                    !isPaid &&
+                                    String(firstPayableInstallment?.id) === String(item.id);
+
                                 return (
-                                    <div key={item.id || index} style={styles.tableRow4}>
+                                    <div key={item.id || index} style={styles.tableRow5}>
                                         <span>{formatDate(dueDate)}</span>
 
                                         <span style={styles.moneyText}>
@@ -421,6 +518,30 @@ export default function LoanDetail() {
                                             <span style={getInstallmentStatusStyle(status)}>
                                                 {getInstallmentStatusName(status)}
                                             </span>
+                                        </span>
+
+                                        <span>
+                                            {isPaid ? (
+                                                <button style={styles.paidButton} disabled>
+                                                    Төлсөн
+                                                </button>
+                                            ) : canPay ? (
+                                                <button
+                                                    style={styles.payButton}
+                                                    onClick={() => handlePayInstallment(item)}
+                                                    disabled={payingId === item.id}
+                                                >
+                                                    {payingId === item.id
+                                                        ? "Төлж байна..."
+                                                        : isPartial
+                                                            ? "Үлдэгдэл төлөх"
+                                                            : "Төлөх"}
+                                                </button>
+                                            ) : (
+                                                <button style={styles.waitButton} disabled>
+                                                    Дараагийнх
+                                                </button>
+                                            )}
                                         </span>
                                     </div>
                                 );
@@ -520,7 +641,7 @@ const styles = {
         background: "#dcfce7",
         color: "#15803d",
         fontSize: "13px",
-        fontWeight: "500",
+        fontWeight: "700",
         whiteSpace: "nowrap",
     },
 
@@ -548,8 +669,8 @@ const styles = {
     cardValue: {
         margin: 0,
         color: "#0f172a",
-        fontSize: "18px",
-        fontWeight: "500",
+        fontSize: "20px",
+        fontWeight: "700",
     },
 
     grid: {
@@ -580,7 +701,7 @@ const styles = {
         margin: "0 0 18px 0",
         fontSize: "18px",
         color: "#0f172a",
-        fontWeight: "500",
+        fontWeight: "700",
     },
 
     infoRow: {
@@ -612,7 +733,7 @@ const styles = {
     scheduleSubText: {
         margin: "-10px 0 0 0",
         color: "#64748b",
-        fontSize: "14px",
+        fontSize: "13px",
     },
 
     table: {
@@ -622,31 +743,8 @@ const styles = {
         background: "#ffffff",
     },
 
-    tableHeader4: {
-        display: "grid",
-        gridTemplateColumns: "1.1fr 1.2fr 1.2fr 1fr",
-        gap: "12px",
-        background: "#f8fafc",
-        padding: "16px 18px",
-        fontSize: "13px",
-        fontWeight: ":00",
-        color: "#475569",
-        borderBottom: "1px solid #e2e8f0",
-    },
-
-    tableRow4: {
-        display: "grid",
-        gridTemplateColumns: "1.1fr 1.2fr 1.2fr 1fr",
-        gap: "12px",
-        alignItems: "center",
-        padding: "16px 18px",
-        borderTop: "1px solid #f1f5f9",
-        fontSize: "14px",
-        color: "#0f172a",
-    },
-
     moneyText: {
-        fontWeight: "500",
+        fontWeight: "600",
     },
 
     pagination: {
@@ -692,5 +790,61 @@ const styles = {
         textAlign: "center",
         padding: "40px",
         color: "#64748b",
+    },
+
+    tableHeader5: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1.2fr 1.2fr 1fr 1fr",
+        gap: "12px",
+        background: "#f8fafc",
+        padding: "16px 18px",
+        fontSize: "13px",
+        fontWeight: "700",
+        color: "#475569",
+        borderBottom: "1px solid #e2e8f0",
+    },
+
+    tableRow5: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1.2fr 1.2fr 1fr 1fr",
+        gap: "12px",
+        alignItems: "center",
+        padding: "16px 18px",
+        borderTop: "1px solid #f1f5f9",
+        fontSize: "14px",
+        color: "#0f172a",
+    },
+
+    payButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#2563eb",
+        color: "white",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: "700",
+    },
+
+    paidButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#e2e8f0",
+        color: "#64748b",
+        cursor: "not-allowed",
+        fontSize: "13px",
+        fontWeight: "700",
+    },
+
+    waitButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#f1f5f9",
+        color: "#94a3b8",
+        cursor: "not-allowed",
+        fontSize: "13px",
+        fontWeight: "700",
     },
 };
