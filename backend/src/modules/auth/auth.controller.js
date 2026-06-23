@@ -30,5 +30,14 @@ export const logout = asyncHandler(async (req, res) => {
     await authService.logout(refreshToken);
     res.clearCookie("refreshToken", {httpOnly: true, secure: false , sameSite: "lax", path: "/api/auth",});
     return Success(res,null, 200, "Амжилттай гарлаа.");
-  }
-);
+  });
+export const forgotPassword = asyncHandler(async (req, res) => {
+    const {email}=req.body;
+    const resetToken= await authService.createPasswordResetToken(email);
+    return Success(res, null, 200, "Нууц үг сэргээх холбоосыг илгээлээ.");
+});
+export const resetPassword= asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    const data = await authService.resetPassword(token, newPassword);
+    return Success(res, null, 200, "Амжилттай өөрчлөгдлөө.")
+});

@@ -5,6 +5,7 @@ import Payment from "./payments.model.js";
 import User from "./user.model.js";
 import Customer from "./customer.model.js";
 import Employment from "./employments.model.js";
+import PasswordReset from "./password.reset.model.js";
 Loan.hasMany(Installment, {
   foreignKey: "loan_id",
   as: "installments",
@@ -40,4 +41,12 @@ User.belongsTo(Customer, {
   foreignKey: "customer_id",
   as: "customer",
 });
-export {sequelize, Loan, Installment, Payment, User, Customer,Employment,};
+PasswordReset.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+User.hasMany(PasswordReset, {
+  foreignKey: "user_id",
+  as:"passwordReset",
+});
+export {sequelize, Loan, Installment, Payment, User, Customer,Employment, PasswordReset};

@@ -85,3 +85,13 @@ export async function revokeAllSessions(userId){
   }
 );
 }
+export async function updateUserPassword(userId, passwordHash) {
+  return await User.update(
+    {
+      password_hash: passwordHash,
+    },
+    {
+      where: { id: userId },
+    }
+  );
+}

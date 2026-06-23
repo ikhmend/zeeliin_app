@@ -5,7 +5,9 @@ import * as customerRepository from "../customers/customer.repository.js"
 import sequelize from "../../config/sequelize.js";
 import AppError from "../../utility/AppError.js";
 import cookieParser from "cookie-parser";
-import crypto from "crypto";
+import crypto, { randomBytes } from "crypto";
+import * as passRepository from "./password.reset.repesitory.js";
+import { sendPasswordResetEmail } from "../../utility/email.service.js";
 export async function login(loginData) {
     const {login, password} = loginData;
     // if (!login?.trim() || !password?.trim()){
@@ -148,4 +150,33 @@ export async function logout(refreshToken) {
   }
   const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
   await authRepository.revokeSessionByHash(refreshTokenHash);
+}
+
+export async function createPasswordResetToken(email) {
+  const user = await authRepository.findUserByUnique({ email });
+  if (!user) {
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+  }
+  const token = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  await passRepository.createPassReset(user.id, tokenHash, expiresAt);
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  await sendPasswordResetEmail(email, resetLink);
+  return true;
+}
+export async function verifyPasswordResetToken(token) {
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const resetRecord =await passRepository.findValidPasswordReset(tokenHash);
+  if (!resetRecord) {
+    throw new AppError("Reset token хүчингүй эсвэл хугацаа дууссан байна", 400);
+  }
+  return resetRecord;
+}
+export async function resetPassword(token, newPassword) {
+  const resetRecord = await verifyPasswordResetToken(token);
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await authRepository.updateUserPassword(resetRecord.user_id, passwordHash);
+  await passRepository.markPasswordResetAsUsed(resetRecord.id);
+  return {message: "Нууц үг амжилттай шинэчлэгдлээ",};
 }
