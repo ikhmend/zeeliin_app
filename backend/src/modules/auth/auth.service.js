@@ -24,7 +24,7 @@ export async function login(loginData) {
     }
     const token = jwt.sign({id: user.id, customer_id: user.customer_id,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
     const rtoken= jwt.sign({id: user.id,}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d"});
-    const rtokenHash= crypto.createHash("sha256").update(rtoken).digest("hex"); //husnegtend hadgalna, password solihod heregtei
+    const rtokenHash= crypto.createHash("sha256").update(rtoken).digest("hex"); //husnegtend hadgalna, password solihod revoked bolno
     const decoded= jwt.decode(rtoken);
     if(!decoded?.exp){
         throw new AppError("Токены хугацаа тодорхойлж чадсангүй.", 500);

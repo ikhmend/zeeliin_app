@@ -9,7 +9,7 @@ export const getMe= asyncHandler(async (req, res) => {
 export const login= asyncHandler(async (req, res) => {
     const data= await authService.login(req.validated.body);
     res.cookie("refreshToken", data.rtoken, {
-        httpOnly:true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV==="production"? "none" : "lax", maxAge: 7*24*60*60*1000, path: "/api/auth"
+        httpOnly:true, secure: false, sameSite: process.env.NODE_ENV==="production"? "none" : "lax", maxAge: 7*24*60*60*1000, path: "/api/auth"
     });
     return Success(res, {token: data.token, user:data.user}, 200, "Амжилттай нэвтэрлээ.");
 });
@@ -28,7 +28,7 @@ export const refresh= asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
     const refreshToken =req.cookies.refreshToken;
     await authService.logout(refreshToken);
-    res.clearCookie("refreshToken", {httpOnly: true,secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", path: "/api/auth",});
+    res.clearCookie("refreshToken", {httpOnly: true, secure: false , sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", path: "/api/auth",});
     return Success(res,null, 200, "Амжилттай гарлаа.");
   }
 );
