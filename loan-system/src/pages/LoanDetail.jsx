@@ -335,7 +335,7 @@ export default function LoanDetail() {
                                                     <button 
                                                         style={styles.waitButton} 
                                                         disabled
-                                                        title="Та эхлээд өмнөх хуудасны хугацаа хэтэрсэн эсвэл хамгийн эхний төлөлтийг хийнэ үү."
+                                                        title="Та эхлээд өмнөх төлөлтийг хийнэ үү."
                                                     >
                                                         Дараагийнх
                                                     </button>
