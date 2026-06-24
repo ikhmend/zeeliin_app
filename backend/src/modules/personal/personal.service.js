@@ -97,3 +97,4 @@ export async function makeMyPayment(customerId, loanId, paymentData){
   const loan = await checkLoanOwnership(customerId, loanId);
   return await paymentsService.makePayment(loan.id, paymentData);
 }
+
