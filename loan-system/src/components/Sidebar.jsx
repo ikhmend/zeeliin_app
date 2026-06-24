@@ -6,7 +6,6 @@ import {
     CreditCardOutlined,
     SettingOutlined,
 } from "@ant-design/icons";
-
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     const menu = [
         { name: "Dashboard", path: "/dashboard", icon: <HomeOutlined /> },
@@ -14,6 +13,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         { name: "Payments", path: "/payments", icon: <CreditCardOutlined /> },
         { name: "Profile", path: "/profile", icon: <UserOutlined /> },
         { name: "Settings", path: "/settings", icon: <SettingOutlined /> },
+
     ];
 
     return (
