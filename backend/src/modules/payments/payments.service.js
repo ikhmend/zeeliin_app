@@ -4,6 +4,7 @@ import * as paymentsRepository from "./payments.repository.js";
 import * as installmentService from "../installments/installments.service.js"
 import AppError from "../../utility/AppError.js";
 import sequelize from "../../config/sequelize.js";
+import { mapInstallment, mapPayment } from "./payments.mapper.js";
 export async function makePayment(id, paymentData) {
   const {payment_amount, payment_date, payment_method, received_user_id,note,} = paymentData;
   const paymentAmount = Number(payment_amount);
@@ -53,8 +54,10 @@ export async function makePayment(id, paymentData) {
   });
 }
 export async function getPaymentsByLoanId(loanId) {
-  return await paymentsRepository.findPaymentsByLoanId(loanId);
+  const payments= await paymentsRepository.findPaymentsByLoanId(loanId);
+  return payments.map(mapPayment);
 }
 export async function getPaymentsByInstallmentId(installmentId) {
-  return await paymentsRepository.findPaymentsByInstallmentId(installmentId);
+  const payments= await paymentsRepository.findPaymentsByInstallmentId(installmentId);
+  return payments.map(mapPayment);
 }

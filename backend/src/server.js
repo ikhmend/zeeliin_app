@@ -26,21 +26,17 @@ app.use("/api/me", personalRoutes);
 app.get("/", (req, res)=>{
     res.send("ajillaj baina");
 });
-app.get("/api/test", async (req, res)=>{
-    try{
-        const a=await pool.query("select * from users where id=15");
-        res.json({message: "db holbogdson", data: a.rows,});
-    }
-    catch(error){
-        res.status(500).json({message: "db holbolt amjiltgui", error: error.message});
-    }
-});
 const port=process.env.PORT || 5000;
-async function start(){
-    await sequelize.authenticate().then(()=> console.log("sequelize on")).catch((error)=> console.log("sequelize error",error));
-    app.listen(port, ()=>{
-        console.log(`server on: ${port}`);
+async function start() {
+  try {
+    await sequelize.authenticate();
+    app.listen(port, () => {
+      console.log(`port: ${port}`);
     });
+  } catch (error) {
+    console.error("Database failed:", error);
+    process.exit(1);
+  }
 }
 app.use(notFoundHandler);
 app.use(errorHandler);

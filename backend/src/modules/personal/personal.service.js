@@ -6,6 +6,7 @@ import * as paymentsRepository from "../payments/payments.repository.js";
 import * as paymentsService from "../payments/payments.service.js";
 import * as installmentsService from "../installments/installments.service.js";
 import AppError from "../../utility/AppError.js";
+import { mapProfileResponse, mapDashboardResponse, mapPayment, mapInstallment } from "./personal.mapper.js";
 export async function getProfileData(userId, customerId) {
   const user = await authRepository.findUserById(userId);
   if (!user) {
@@ -15,9 +16,7 @@ export async function getProfileData(userId, customerId) {
   if (!customerProfile) {
     throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
   }
-  return {account: {id: user.id, username: user.username, full_name: user.full_name, email: user.email, phone: user.phone,role: user.role, is_active: user.is_active,},
-    profile: customerProfile,
-  };
+  return mapProfileResponse(user, customerProfile);
 }
 export async function updateProfile(customerId, customerData) {
   const customer =await customerRepository.findCustomer(customerId);
@@ -59,18 +58,21 @@ export async function getMyLoanById(customerId, loanId) {
 export async function getMyLoanInstallments(customerId, loanId) {
   const loan= await checkLoanOwnership(customerId, loanId);
   await installmentsService.updateOverdueInstallments(loan.id);
-  return await installmentsRepository.getInstallmentsByLoanId(loan.id);
+  const installments= installmentsRepository.getInstallmentsByLoanId(loan.id);
+  return installments.map(mapInstallment);
 }
 export async function getMyLoanPayments(customerId, loanId) {
   const loan = await checkLoanOwnership(customerId, loanId);
-  return await paymentsRepository.findPaymentsByLoanId(loan.id);
+  const payments = await paymentsRepository.findPaymentsByLoanId(loan.id);
+  return payments.map(mapPayment);
 }
 export async function getMyPayments(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
   if (!customer){ 
     throw new AppError("Харилцагч олдсонгүй.", 404);
   }
-  return await paymentsRepository.findPaymentsByCustomerId(customerId);
+  const payments= paymentsRepository.findPaymentsByCustomerId(customerId);
+  return payments.map(mapPayment);
 }
 export async function getDashboardData(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
@@ -91,7 +93,7 @@ export async function getDashboardData(customerId) {
   const totalOutstandingAmount = remainingAmounts.reduce((sum, amount)=>sum + Number(amount || 0), 0);
   const upcomingInstallments = await installmentsRepository.findUpcomingInstallmentsByCustomerId(customerId, 3);
   const nextInstallment = upcomingInstallments[0] ?? null;
-  return {dashboardData: {name: customer.first_name, activeLoanCount, totalOutstandingAmount, nextPaymentAmount: nextInstallment ? Number(nextInstallment.remaining_amount) : null, nextPaymentDate: nextInstallment ? nextInstallment.due_date : null, }, recentPayments, upcomingInstallments,};
+  return mapDashboardResponse(customer, activeLoanCount, totalOutstandingAmount, recentPayments, upcomingInstallments)
 }
 export async function makeMyPayment(customerId, loanId, paymentData){
   const loan = await checkLoanOwnership(customerId, loanId);

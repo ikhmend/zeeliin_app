@@ -36,7 +36,6 @@ export const makePaymentSchema = z.object({
 
   query: z.object({}).optional().default({}),
 });
-
 export const updateProfileSchema = z.object({
   body: z
     .object({
