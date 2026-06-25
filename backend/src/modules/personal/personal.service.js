@@ -93,7 +93,7 @@ export async function getDashboardData(customerId) {
   const totalOutstandingAmount = remainingAmounts.reduce((sum, amount)=>sum + Number(amount || 0), 0);
   const upcomingInstallments = await installmentsRepository.findUpcomingInstallmentsByCustomerId(customerId, 3);
   const nextInstallment = upcomingInstallments[0] ?? null;
-  return mapDashboardResponse(customer, activeLoanCount, totalOutstandingAmount, recentPayments, upcomingInstallments)
+  return mapDashboardResponse({customer,activeLoanCount, totalOutstandingAmount, recentPayments, upcomingInstallments,});
 }
 export async function makeMyPayment(customerId, loanId, paymentData){
   const loan = await checkLoanOwnership(customerId, loanId);

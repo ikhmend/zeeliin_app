@@ -24,6 +24,11 @@ export const makePaymentSchema = z.object({
         "qpay",
         "card",
       ]),
+      note: z
+      .string()
+      .trim()
+      .max(500, "Тайлбар хамгийн ихдээ 500 тэмдэгт байна.")
+      .optional(),
     })
     .strict(),
 

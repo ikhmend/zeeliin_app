@@ -20,8 +20,7 @@ export async function markPasswordResetAsUsed(resetId, transaction=null) {
       used_at: new Date(),
     },
     {
-      where: { id: resetId },
+      where: { id: resetId }, transaction,
     },
-    transaction,
   );
 }

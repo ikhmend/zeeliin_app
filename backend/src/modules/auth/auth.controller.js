@@ -32,12 +32,12 @@ export const logout = asyncHandler(async (req, res) => {
     return Success(res,null, 200, "Амжилттай гарлаа.");
   });
 export const forgotPassword = asyncHandler(async (req, res) => {
-    const {email}=req.body;
+    const {email}=req.validated.body;
     const resetToken= await authService.createPasswordResetToken(email);
     return Success(res, null, 200, "Нууц үг сэргээх холбоосыг илгээлээ.");
 });
 export const resetPassword= asyncHandler(async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { token, newPassword } = req.validated.body;
     const data = await authService.resetPassword(token, newPassword);
     return Success(res, null, 200, "Амжилттай өөрчлөгдлөө.")
 });

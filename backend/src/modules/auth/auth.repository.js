@@ -92,8 +92,7 @@ export async function updateUserPassword(userId, passwordHash, transaction=null)
       password_hash: passwordHash,
     },
     {
-      where: { id: userId },
+      where: { id: userId }, transaction
     },
-    transaction,
   );
 }
