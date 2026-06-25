@@ -12,7 +12,7 @@ export const loanIdSchema = z.object({
 export const makePaymentSchema = z.object({
   body: z
     .object({
-      amount: z.coerce
+      payment_amount: z.coerce
         .number()
         .positive(
           "Төлөлтийн дүн 0-ээс их байх ёстой."

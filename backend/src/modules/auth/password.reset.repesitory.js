@@ -14,13 +14,14 @@ export async function findValidPasswordReset(tokenHash) {
     },
   });
 }
-export async function markPasswordResetAsUsed(resetId) {
+export async function markPasswordResetAsUsed(resetId, transaction=null) {
   return await PasswordReset.update(
     {
       used_at: new Date(),
     },
     {
       where: { id: resetId },
-    }
+    },
+    transaction,
   );
 }

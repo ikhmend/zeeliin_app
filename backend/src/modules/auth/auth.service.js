@@ -155,7 +155,7 @@ export async function logout(refreshToken) {
 export async function createPasswordResetToken(email) {
   const user = await authRepository.findUserByUnique({ email });
   if (!user) {
-    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+    throw new AppError("Алдаа гарлаа, дахин оролдоно уу", 400);
   }
   const token = crypto.randomBytes(32).toString("hex");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -174,9 +174,15 @@ export async function verifyPasswordResetToken(token) {
   return resetRecord;
 }
 export async function resetPassword(token, newPassword) {
+    if(!newPassword || newPassword.length<8){
+        throw new AppError("Нууц үг хамгийн багадаа 8 тэмдэгт байна.", 400)
+    }
   const resetRecord = await verifyPasswordResetToken(token);
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  await authRepository.updateUserPassword(resetRecord.user_id, passwordHash);
-  await passRepository.markPasswordResetAsUsed(resetRecord.id);
-  return {message: "Нууц үг амжилттай шинэчлэгдлээ",};
+  return await sequelize.transaction(async (transaction)=> {
+    await authRepository.updateUserPassword(resetRecord.user_id, passwordHash, transaction);
+    await passRepository.markPasswordResetAsUsed(resetRecord.id, transaction);
+    await authRepository.revokeAllSessions(resetRecord.user_id, transaction)
+    return {message: "Нууц үг амжилттай шинэчлэгдлээ",};
+  });
 }

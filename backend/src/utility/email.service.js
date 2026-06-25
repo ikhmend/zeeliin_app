@@ -13,9 +13,9 @@ export async function sendPasswordResetEmail(email, resetLink) {
     from: process.env.SMTP_FROM,
     to: email,
     subject: "Нууц үг сэргээх",
-    text: `Ok nuuts ugee martchihsan uu? ok iishee or ok: ${resetLink}`,
+    text: `Ok nuuts ugee martchihsan uu? ok iishee or: ${resetLink}`,
     html: `
-      <p>ene holboos deer darchih</p>
+      <p>ene holboos deer dar</p>
       <a href="${resetLink}">Нууц үг сэргээх</a>
       <p>15 minutiin dotor solioroi ok.</p>
     `,

@@ -58,7 +58,7 @@ export async function getMyLoanById(customerId, loanId) {
 export async function getMyLoanInstallments(customerId, loanId) {
   const loan= await checkLoanOwnership(customerId, loanId);
   await installmentsService.updateOverdueInstallments(loan.id);
-  const installments= installmentsRepository.getInstallmentsByLoanId(loan.id);
+  const installments= await installmentsRepository.getInstallmentsByLoanId(loan.id);
   return installments.map(mapInstallment);
 }
 export async function getMyLoanPayments(customerId, loanId) {
@@ -71,7 +71,7 @@ export async function getMyPayments(customerId) {
   if (!customer){ 
     throw new AppError("Харилцагч олдсонгүй.", 404);
   }
-  const payments= paymentsRepository.findPaymentsByCustomerId(customerId);
+  const payments= await paymentsRepository.findPaymentsByCustomerId(customerId);
   return payments.map(mapPayment);
 }
 export async function getDashboardData(customerId) {
