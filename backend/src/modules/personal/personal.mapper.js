@@ -36,7 +36,7 @@ export function mapRecentPayment(payment){
     return {
         id:payment.id,
         loan_id: payment.loan_id,
-        amount: Number(payment.amount),
+        payment_amount: Number(payment.payment_amount),
         payment_date:payment.payment_date,
         payment_method: payment.payment_method,
         status:payment.status,

@@ -46,17 +46,13 @@ export const updateProfileSchema = z.object({
       phone: z
         .string()
         .trim()
-        .min(8, "Утасны дугаар хэт богино байна.")
-        .max(20, "Утасны дугаар хэт урт байна.")
+        .regex(/^\d{8}$/, "Утасны дугаар яг 8 оронтой байна.")
         .optional(),
-
       home_phone: z
         .string()
         .trim()
-        .max(20, "Гэрийн утасны дугаар хэт урт байна.")
-        .nullable()
+        .regex(/^\d{8}$/, "Утасны дугаар яг 8 оронтой байна.")
         .optional(),
-
       email: z
         .string()
         .trim()
@@ -70,14 +66,12 @@ export const updateProfileSchema = z.object({
         .max(100, "Сошиал мэдээлэл хэт урт байна.")
         .nullable()
         .optional(),
-
       activity_dir: z
         .string()
         .trim()
         .max(200, "Үйл ажиллагааны чиглэл хэт урт байна.")
         .nullable()
         .optional(),
-
       business_type: z
         .string()
         .trim()
