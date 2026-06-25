@@ -6,9 +6,10 @@ import AppError from "../../utility/AppError.js";
 import sequelize from "../../config/sequelize.js";
 import { mapInstallment, mapPayment } from "./payments.mapper.js";
 export async function makePayment(id, paymentData) {
-  const {payment_amount, payment_date, payment_method, received_user_id,note,} = paymentData;
+  const {payment_amount, payment_method, received_user_id,note,} = paymentData;
   const paymentAmount = Number(payment_amount);
-  if (!Number.isFinite(paymentAmount) || paymentAmount <= 0 ||!payment_date || !payment_method?.trim()){
+  const paymentDate = new Date();
+  if (!Number.isFinite(paymentAmount) || paymentAmount <= 0 || !payment_method?.trim()){
     throw new AppError("Алдаатай төлөлт.", 400);
   }
   return await sequelize.transaction(async (transaction) => {
@@ -40,7 +41,7 @@ export async function makePayment(id, paymentData) {
       const updateData = {remaining_amount:remainingAmount - payForInstallment, status: isFullyPaid ? "paid" : "partial",paid_date: isFullyPaid ? payment_date: null, paid_amount: Number(installment.paid_amount || 0) + payForInstallment,
       };
       const updatedInstallment = await installmentsRepository.updateInstallmentPayment(installment.id, updateData, transaction);
-      const newPayment = {loan_id: loan.id, installment_id: installment.id,payment_amount: payForInstallment, payment_date: new Date(), payment_method: payment_method.trim(), received_user_id: received_user_id || null, note: note?.trim() || "",};
+      const newPayment = {loan_id: loan.id, installment_id: installment.id,payment_amount: payForInstallment, payment_date: payment_date, payment_method: payment_method.trim(), received_user_id: received_user_id || null, note: note?.trim() || "",};
       const createdPayment = await paymentsRepository.createPayment(newPayment, transaction);
       paidInstallments.push(updatedInstallment);
       payments.push(createdPayment);
