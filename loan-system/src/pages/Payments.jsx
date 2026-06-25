@@ -1,12 +1,27 @@
+//LoanDetail => thuvaariin ehnii tulbur tuluhni idehjsnni 
+
+
 import { useEffect, useState } from "react";
-import { getMyPayments } from "../api/LoansApi";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+    getLoanDetail,
+    getLoanInstallments,
+    makeLoanPayment,
+} from "../api/LoansApi";
 
 const PAGE_SIZE = 5;
-export default function Payments() {
-    const [payments, setPayments] = useState([]);
+
+export default function LoanDetail() {
+    const { loanId } = useParams();
+    const navigate = useNavigate();
+
+    const [loan, setLoan] = useState(null);
+    const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    // payingId state-ийг энд нэмж зарлав
+    const [payingId, setPayingId] = useState(null); 
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -28,11 +43,15 @@ export default function Payments() {
         });
     };
 
-    const getValue = (obj, ...keys) => {
+    const formatPercent = (value) => {
+        return `${Number(value || 0).toFixed(2)}%`;
+    };
+
+    const getLoanValue = (...keys) => {
         for (const key of keys) {
             const value = key
                 .split(".")
-                .reduce((current, part) => current?.[part], obj);
+                .reduce((obj, part) => obj?.[part], loan);
 
             if (value !== undefined && value !== null && value !== "") {
                 return value;
@@ -42,35 +61,42 @@ export default function Payments() {
         return null;
     };
 
-    const getStatusName = (status) => {
-        if (status === "paid") return "Төлөгдсөн";
-        if (status === "success") return "Амжилттай";
-        if (status === "completed") return "Дууссан";
-        if (status === "pending") return "Хүлээгдэж байна";
-        if (status === "failed") return "Амжилтгүй";
-        if (status === "cancelled") return "Цуцлагдсан";
-
-        return status || "Төлөгдсөн";
+    const getProductName = (product) => {
+        if (product === "personal") return "Хувийн зээл";
+        if (product === "business") return "Бизнес зээл";
+        return product || "-";
     };
 
-    const getStatusStyle = (status) => {
+    const getStatusName = (status) => {
+        if (status === "active") return "Идэвхтэй";
+        if (status === "closed") return "Хаагдсан";
+        if (status === "overdue") return "Хугацаа хэтэрсэн";
+        if (status === "pending") return "Хүлээгдэж байна";
+        return status || "-";
+    };
+
+    const getInstallmentStatusName = (status) => {
+        if (status === "paid") return "Төлсөн";
+        if (status === "pending") return "Төлөх";
+        if (status === "partial") return "Хэсэгчлэн төлсөн";
+        if (status === "overdue") return "Хугацаа хэтэрсэн";
+        return status || "-";
+    };
+
+    // Давхардсан болон дутуу хаалттай байсан функцийг цэгцлэв
+    const getInstallmentStatusStyle = (status) => {
         const base = {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            minWidth: "96px",
+            minWidth: "110px",
             padding: "7px 12px",
             borderRadius: "999px",
             fontSize: "12px",
             fontWeight: "700",
         };
 
-        if (
-            status === "paid" ||
-            status === "success" ||
-            status === "completed" ||
-            !status
-        ) {
+        if (status === "paid") {
             return {
                 ...base,
                 background: "#dcfce7",
@@ -78,7 +104,15 @@ export default function Payments() {
             };
         }
 
-        if (status === "failed" || status === "cancelled") {
+        if (status === "partial") {
+            return {
+                ...base,
+                background: "#fef3c7",
+                color: "#92400e",
+            };
+        }
+
+        if (status === "overdue") {
             return {
                 ...base,
                 background: "#fee2e2",
@@ -93,49 +127,80 @@ export default function Payments() {
         };
     };
 
-    const getMethodName = (method) => {
-        if (method === "cash") return "Бэлэн";
-        if (method === "bank") return "Банк";
-        if (method === "transfer") return "Шилжүүлэг";
-        if (method === "card") return "Карт";
-        if (method === "qpay") return "QPay";
-
-        return method || "-";
+    const getInstallmentRemainingAmount = (installment) => {
+        return Number(
+            installment.remaining_amount ??
+            installment.remainingAmount ??
+            installment.total_amount ??
+            installment.totalAmount ??
+            0
+        );
     };
 
-    useEffect(() => {
-        async function loadPayments() {
-            try {
-                setLoading(true);
-                setError("");
+    const getFirstPayableInstallment = () => {
+        return installments.find((item) => {
+            const status =
+                item.status ||
+                item.installment_status ||
+                item.installmentStatus;
 
-                const data = await getMyPayments();
+            const remainingAmount = getInstallmentRemainingAmount(item);
 
-                console.log("PAYMENTS FINAL:", data);
+            return status !== "paid" && remainingAmount > 0;
+        });
+    };
 
-                setPayments(data || []);
-                setCurrentPage(1);
-            } catch (err) {
-                console.error("Payments error:", err);
-                console.error("Payments response:", err.response?.data);
+    const handlePayInstallment = async (installment) => {
+        const remainingAmount = getInstallmentRemainingAmount(installment);
 
-                setError(
-                    err.response?.data?.error ||
-                    err.response?.data?.message ||
-                    err.message ||
-                    "Төлбөрийн түүх авахад алдаа гарлаа"
-                );
-            } finally {
-                setLoading(false);
-            }
+        if (!remainingAmount || remainingAmount <= 0) {
+            alert("Төлөх дүн олдсонгүй.");
+            return;
         }
 
-        loadPayments();
-    }, []);
+        const ok = window.confirm(
+            `${formatMoney(remainingAmount, loan?.currency || "MNT")} төлөх үү?`
+        );
 
-    const totalPages = Math.max(1, Math.ceil(payments.length / PAGE_SIZE));
+        if (!ok) return;
 
-    const paginatedPayments = payments.slice(
+        try {
+            setPayingId(installment.id);
+
+            const today = new Date().toISOString().slice(0, 10);
+
+            await makeLoanPayment(loanId, {
+                payment_amount: remainingAmount,
+                payment_date: today,
+                payment_method: "mock",
+                note: `Customer web mock payment. Installment ID: ${installment.id}`,
+            });
+
+            const [loanData, installmentData] = await Promise.all([
+                getLoanDetail(loanId),
+                getLoanInstallments(loanId),
+            ]);
+
+            setLoan(loanData);
+            setInstallments(installmentData || []);
+        } catch (err) {
+            console.error("Make payment error:", err);
+            console.error("Make payment response:", err.response?.data);
+
+            alert(
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                err.message ||
+                "Төлбөр хийх үед алдаа гарлаа"
+            );
+        } finally {
+            setPayingId(null);
+        }
+    };
+
+    const totalPages = Math.max(1, Math.ceil(installments.length / PAGE_SIZE));
+
+    const paginatedInstallments = installments.slice(
         (currentPage - 1) * PAGE_SIZE,
         currentPage * PAGE_SIZE
     );
@@ -148,20 +213,40 @@ export default function Payments() {
         setCurrentPage((prev) => Math.min(totalPages, prev + 1));
     };
 
-    const totalPaidAmount = payments.reduce((sum, payment) => {
-        const amount = getValue(
-            payment,
-            "payment_amount",
-            "paymentAmount",
-            "paid_amount",
-            "paidAmount",
-            "amount",
-            "total_amount",
-            "totalAmount"
-        );
+    useEffect(() => {
+        async function loadLoanDetail() {
+            try {
+                setLoading(true);
+                setError("");
 
-        return sum + Number(amount || 0);
-    }, 0);
+                const [loanData, installmentData] = await Promise.all([
+                    getLoanDetail(loanId),
+                    getLoanInstallments(loanId),
+                ]);
+
+                console.log("LOAN DETAIL FINAL:", loanData);
+                console.log("INSTALLMENTS FINAL:", installmentData);
+
+                setLoan(loanData);
+                setInstallments(installmentData || []);
+                setCurrentPage(1);
+            } catch (err) {
+                console.error("Loan detail error:", err);
+                console.error("Loan detail response:", err.response?.data);
+
+                setError(
+                    err.response?.data?.error ||
+                    err.response?.data?.message ||
+                    err.message ||
+                    "Зээлийн дэлгэрэнгүй мэдээлэл авахад алдаа гарлаа"
+                );
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadLoanDetail();
+    }, [loanId]);
 
     if (loading) {
         return <p style={styles.message}>Уншиж байна...</p>;
@@ -171,148 +256,303 @@ export default function Payments() {
         return <p style={styles.message}>{error}</p>;
     }
 
-    return (
-        <div style={styles.container} className="page-container">
+    if (!loan) {
+        return <p style={styles.message}>Зээлийн мэдээлэл олдсонгүй.</p>;
+    }
 
-            <div style={styles.cards} className="responsive-cards two-card-grid">
-                <div style={styles.card} className="responsive-card">
-                    <p style={styles.cardLabel}>Нийт төлөлт</p>
-                    <h2 style={styles.cardValue}>{payments.length}</h2>
+    const currency = getLoanValue("currency", "currency_code", "currencyCode") || "MNT";
+
+    const loanProduct = getLoanValue(
+        "loan_product",
+        "loanProduct",
+        "loan_type",
+        "loanType",
+        "product",
+        "type"
+    );
+
+    const accountNumber = getLoanValue(
+        "account_no",
+        "account_number",
+        "accountNo",
+        "accountNumber",
+        "loan_account",
+        "loanAccount"
+    );
+
+    const startDate = getLoanValue(
+        "start_date",
+        "startDate",
+        "loan_start_date",
+        "loanStartDate",
+        "issued_date",
+        "issuedDate"
+    );
+
+    const previousLoanBalance = getLoanValue(
+        "previous_loan_balance",
+        "previousLoanBalance",
+        "previous_balance",
+        "previousBalance",
+        "old_loan_balance",
+        "oldLoanBalance"
+    );
+
+    const interestRate = getLoanValue(
+        "interest_rate",
+        "interestRate",
+        "interest",
+        "monthly_interest_rate",
+        "monthlyInterestRate"
+    );
+
+    const feePercent = getLoanValue(
+        "fee_percent",
+        "feePercent",
+        "fee_rate",
+        "feeRate",
+        "commission_rate",
+        "commissionRate",
+        "service_fee_rate",
+        "serviceFeeRate"
+    );
+
+    const feeAmount = getLoanValue(
+        "fee_amount",
+        "feeAmount",
+        "commission_amount",
+        "commissionAmount",
+        "service_fee_amount",
+        "serviceFeeAmount"
+    );
+
+    return (
+        <div style={styles.container}>
+            <button style={styles.backButton} onClick={() => navigate("/loans")}>
+                Буцах
+            </button>
+
+            <div style={styles.header}>
+                <div>
+                    <h1 style={styles.title}>
+                        {loan.loan_code || loan.loanCode || `Зээл #${loan.id}`}
+                    </h1>
+
+                    <p style={styles.subText}>
+                        Гэрээний дугаар:{" "}
+                        {loan.contract_no || loan.contractNo || "-"}
+                    </p>
                 </div>
 
-                <div style={styles.card} className="responsive-card">
-                    <p style={styles.cardLabel}>Нийт төлсөн дүн</p>
+                <span style={styles.status}>
+                    {getStatusName(
+                        loan.loan_status ||
+                        loan.loanStatus ||
+                        loan.status
+                    )}
+                </span>
+            </div>
+
+            <div style={styles.cards}>
+                <div style={styles.card}>
+                    <p style={styles.cardLabel}>Зээлийн дүн</p>
                     <h2 style={styles.cardValue}>
-                        {formatMoney(totalPaidAmount, "MNT")}
+                        {formatMoney(
+                            loan.loan_amount ||
+                            loan.loanAmount ||
+                            loan.amount,
+                            currency
+                        )}
+                    </h2>
+                </div>
+
+                <div style={styles.card}>
+                    <p style={styles.cardLabel}>Хүү</p>
+                    <h2 style={styles.cardValue}>
+                        {formatPercent(interestRate)}
+                    </h2>
+                </div>
+
+                <div style={styles.card}>
+                    <p style={styles.cardLabel}>Хугацаа</p>
+                    <h2 style={styles.cardValue}>
+                        {loan.duration_month ||
+                            loan.durationMonth ||
+                            loan.duration_months ||
+                            loan.durationMonths ||
+                            0}{" "}
+                        сар
+                    </h2>
+                </div>
+
+                <div style={styles.card}>
+                    <p style={styles.cardLabel}>Шимтгэл</p>
+                    <h2 style={styles.cardValue}>
+                        {formatMoney(feeAmount, currency)}
                     </h2>
                 </div>
             </div>
 
-            <div style={styles.section} className="responsive-card responsive-section">
-                <div style={styles.sectionHeader} className="responsive-card-header">
+            <div style={styles.grid}>
+                <div style={styles.box}>
+                    <h3 style={styles.boxTitle}>Зээлийн үндсэн мэдээлэл</h3>
+
+                    <InfoRow
+                        label="Зээлийн төрөл"
+                        value={getProductName(loanProduct)}
+                    />
+
+                    <InfoRow
+                        label="Дансны дугаар"
+                        value={accountNumber || "-"}
+                    />
+
+                    <InfoRow
+                        label="Валют"
+                        value={currency || "-"}
+                    />
+
+                    <InfoRow
+                        label="Эхэлсэн огноо"
+                        value={formatDate(startDate)}
+                    />
+
+                    <InfoRow
+                        label="Өмнөх зээлийн үлдэгдэл"
+                        value={formatMoney(previousLoanBalance, currency)}
+                    />
+                </div>
+
+                <div style={styles.box}>
+                    <h3 style={styles.boxTitle}>Хүү, шимтгэлийн мэдээлэл</h3>
+
+                    <InfoRow
+                        label="Хүүгийн хувь"
+                        value={formatPercent(interestRate)}
+                    />
+
+                    <InfoRow
+                        label="Шимтгэлийн хувь"
+                        value={formatPercent(feePercent)}
+                    />
+
+                    <InfoRow
+                        label="Шимтгэлийн дүн"
+                        value={formatMoney(feeAmount, currency)}
+                    />
+                </div>
+            </div>
+
+            <div style={styles.section}>
+                <div style={styles.scheduleHeader}>
                     <div>
-                        <h3 style={styles.boxTitle}>Төлөлтийн жагсаалт</h3>
-                        <p style={styles.sectionSubText}>
-                            Нийт {payments.length} төлөлт байна
+                        <h3 style={styles.boxTitle}>Төлөлтийн хуваарь</h3>
+                        <p style={styles.scheduleSubText}>
+                            Нийт {installments.length} төлөлт байна
                         </p>
                     </div>
                 </div>
 
-                {payments.length === 0 ? (
-                    <p style={styles.emptyText}>
-                        Төлбөрийн түүх байхгүй байна.
-                    </p>
+                {installments.length === 0 ? (
+                    <p style={styles.emptyText}>Төлөлтийн хуваарь байхгүй байна.</p>
                 ) : (
                     <>
-                        <div style={styles.table} className="responsive-table">
-                            <div style={styles.tableHeader5} className="responsive-table-row table-5">
+                        <div style={styles.table}>
+                            <div style={styles.tableHeader5}>
                                 <span>Огноо</span>
-                                <span>Зээл</span>
-                                <span>Төлсөн дүн</span>
-                                <span>Төлбөрийн арга</span>
+                                <span>Төлөх дүн</span>
+                                <span>Үлдэгдэл</span>
                                 <span>Төлөв</span>
+                                <span>Үйлдэл</span>
                             </div>
 
-                            {paginatedPayments.map((payment, index) => {
-                                const paymentDate = getValue(
-                                    payment,
-                                    "payment_date",
-                                    "paymentAmount",
-                                    "paid_amount",
-                                    "paidAmount",
-                                    "amount",
-                                    "total_amount",
-                                    "totalAmount"
-                                );
+                            {paginatedInstallments.map((item, index) => {
+                                const dueDate =
+                                    item.due_date ||
+                                    item.dueDate ||
+                                    item.payment_date ||
+                                    item.paymentDate;
 
-                                const paymentAmount = getValue(
-                                    payment,
-                                    "payment_amount",
-                                    "paymentAmount",
-                                    "paid_amount",
-                                    "paidAmount",
-                                    "amount",
-                                    "total_amount",
-                                    "totalAmount"
-                                );
+                                const totalAmount =
+                                    item.total_amount ??
+                                    item.totalAmount ??
+                                    item.payment_amount ??
+                                    item.paymentAmount ??
+                                    item.installment_amount ??
+                                    item.installmentAmount ??
+                                    item.amount;
 
-                                const currency =
-                                    getValue(
-                                        payment,
-                                        "currency",
-                                        "loan.currency"
-                                    ) || "MNT";
+                                const remainingAmount =
+                                    item.remaining_amount ??
+                                    item.remainingAmount ??
+                                    item.balance_after_payment ??
+                                    item.balanceAfterPayment;
 
-                                const loanName =
-                                    getValue(
-                                        payment,
-                                        "loan_code",
-                                        "loanCode",
-                                        "loan.loan_code",
-                                        "loan.loanCode",
-                                        "contract_no",
-                                        "contractNo",
-                                        "loan.contract_no",
-                                        "loan.contractNo"
-                                    ) ||
-                                    `Зээл #${
-                                        getValue(
-                                            payment,
-                                            "loan_id",
-                                            "loanId",
-                                            "loan.id"
-                                        ) || "-"
-                                    }`;
+                                const status =
+                                    item.status ||
+                                    item.installment_status ||
+                                    item.installmentStatus;
 
-                                const method = getValue(
-                                    payment,
-                                    "payment_method",
-                                    "paymentMethod",
-                                    "method",
-                                    "type"
-                                );
+                                const firstPayableInstallment = getFirstPayableInstallment();
 
-                                const status = getValue(
-                                    payment,
-                                    "status",
-                                    "payment_status",
-                                    "paymentStatus"
-                                );
+                                const isPaid = status === "paid";
+                                const isPartial = status === "partial";
+
+                                const canPay =
+                                    !isPaid &&
+                                    String(firstPayableInstallment?.id) === String(item.id);
 
                                 return (
-                                    <div
-                                        key={payment.id || index}
-                                        style={styles.tableRow5} className="responsive-table-row table-5"
-                                    >
-                                        <span>{formatDate(paymentDate)}</span>
+                                    <div key={item.id || index} style={styles.tableRow5}>
+                                        <span>{formatDate(dueDate)}</span>
 
-                                        <span style={styles.loanText}>
-                                            {loanName}
+                                        <span style={styles.moneyText}>
+                                            {formatMoney(totalAmount, currency)}
                                         </span>
 
                                         <span style={styles.moneyText}>
-                                            {formatMoney(paymentAmount, currency)}
+                                            {formatMoney(remainingAmount, currency)}
                                         </span>
 
-                                        <span>{getMethodName(method)}</span>
+                                        <span>
+                                            <span style={getInstallmentStatusStyle(status)}>
+                                                {getInstallmentStatusName(status)}
+                                            </span>
+                                        </span>
 
                                         <span>
-                                            <span style={getStatusStyle(status)}>
-                                                {getStatusName(status)}
-                                            </span>
+                                            {isPaid ? (
+                                                <button style={styles.paidButton} disabled>
+                                                    Төлсөн
+                                                </button>
+                                            ) : canPay ? (
+                                                <button
+                                                    style={styles.payButton}
+                                                    onClick={() => handlePayInstallment(item)}
+                                                    disabled={payingId === item.id}
+                                                >
+                                                    {payingId === item.id
+                                                        ? "Төлж байна..."
+                                                        : isPartial
+                                                            ? "Үлдэгдэл төлөх"
+                                                            : "Төлөх"}
+                                                </button>
+                                            ) : (
+                                                <button style={styles.waitButton} disabled>
+                                                    Дараагийнх
+                                                </button>
+                                            )}
                                         </span>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <div style={styles.pagination} className="responsive-pagination">
+                        <div style={styles.pagination}>
                             <button
                                 style={{
                                     ...styles.pageButton,
-                                    ...(currentPage === 1
-                                        ? styles.disabledButton
-                                        : {}),
+                                    ...(currentPage === 1 ? styles.disabledButton : {}),
                                 }}
                                 onClick={handlePrevPage}
                                 disabled={currentPage === 1}
@@ -344,6 +584,15 @@ export default function Payments() {
     );
 }
 
+function InfoRow({ label, value }) {
+    return (
+        <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>{label}</span>
+            <strong style={styles.infoValue}>{value}</strong>
+        </div>
+    );
+}
+
 const styles = {
     container: {
         padding: "0 16px 24px 16px",
@@ -351,9 +600,54 @@ const styles = {
         margin: "0 auto",
     },
 
+    backButton: {
+        marginBottom: "18px",
+        background: "transparent",
+        border: "none",
+        color: "#2563eb",
+        cursor: "pointer",
+        fontSize: "14px",
+        fontWeight: "600",
+        padding: 0,
+    },
+
+    header: {
+        background: "white",
+        borderRadius: "16px",
+        padding: "24px",
+        border: "1px solid #f1f5f9",
+        boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: "24px",
+    },
+
+    title: {
+        margin: "0 0 8px 0",
+        fontSize: "28px",
+        color: "#0f172a",
+    },
+
+    subText: {
+        margin: 0,
+        color: "#64748b",
+        fontSize: "15px",
+    },
+
+    status: {
+        padding: "7px 14px",
+        borderRadius: "999px",
+        background: "#dcfce7",
+        color: "#15803d",
+        fontSize: "13px",
+        fontWeight: "700",
+        whiteSpace: "nowrap",
+    },
+
     cards: {
         display: "grid",
-        gridTemplateColumns: "repeat(2, 1fr)",
+        gridTemplateColumns: "repeat(4, 1fr)",
         gap: "20px",
         marginBottom: "24px",
     },
@@ -376,7 +670,22 @@ const styles = {
         margin: 0,
         color: "#0f172a",
         fontSize: "20px",
-        fontWeight: "500",
+        fontWeight: "700",
+    },
+
+    grid: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "24px",
+        marginBottom: "24px",
+    },
+
+    box: {
+        background: "white",
+        padding: "24px",
+        borderRadius: "16px",
+        border: "1px solid #f1f5f9",
+        boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
     },
 
     section: {
@@ -388,24 +697,43 @@ const styles = {
         marginBottom: "24px",
     },
 
-    sectionHeader: {
+    boxTitle: {
+        margin: "0 0 18px 0",
+        fontSize: "18px",
+        color: "#0f172a",
+        fontWeight: "700",
+    },
+
+    infoRow: {
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "16px",
+        padding: "12px 0",
+        borderBottom: "1px solid #f1f5f9",
+    },
+
+    infoLabel: {
+        color: "#64748b",
+        fontSize: "14px",
+    },
+
+    infoValue: {
+        color: "#0f172a",
+        fontSize: "14px",
+        textAlign: "right",
+    },
+
+    scheduleHeader: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: "14px",
     },
 
-    boxTitle: {
-        margin: "0 0 18px 0",
-        fontSize: "18px",
-        color: "#0f172a",
-        fontWeight: "500",
-    },
-
-    sectionSubText: {
+    scheduleSubText: {
         margin: "-10px 0 0 0",
         color: "#64748b",
-        fontSize: "14px",
+        fontSize: "13px",
     },
 
     table: {
@@ -415,36 +743,8 @@ const styles = {
         background: "#ffffff",
     },
 
-    tableHeader5: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1.1fr 1.2fr 1fr 1fr",
-        gap: "12px",
-        background: "#f8fafc",
-        padding: "16px 18px",
-        fontSize: "13px",
-        fontWeight: "700",
-        color: "#475569",
-        borderBottom: "1px solid #e2e8f0",
-    },
-
-    tableRow5: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1.1fr 1.2fr 1fr 1fr",
-        gap: "12px",
-        alignItems: "center",
-        padding: "16px 18px",
-        borderTop: "1px solid #f1f5f9",
-        fontSize: "14px",
-        color: "#0f172a",
-    },
-
-    loanText: {
-        fontWeight: "500",
-    },
-
     moneyText: {
-        fontWeight: "500",
-        color: "#0f172a",
+        fontWeight: "600",
     },
 
     pagination: {
@@ -490,5 +790,61 @@ const styles = {
         textAlign: "center",
         padding: "40px",
         color: "#64748b",
+    },
+
+    tableHeader5: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1.2fr 1.2fr 1fr 1fr",
+        gap: "12px",
+        background: "#f8fafc",
+        padding: "16px 18px",
+        fontSize: "13px",
+        fontWeight: "700",
+        color: "#475569",
+        borderBottom: "1px solid #e2e8f0",
+    },
+
+    tableRow5: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1.2fr 1.2fr 1fr 1fr",
+        gap: "12px",
+        alignItems: "center",
+        padding: "16px 18px",
+        borderTop: "1px solid #f1f5f9",
+        fontSize: "14px",
+        color: "#0f172a",
+    },
+
+    payButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#2563eb",
+        color: "white",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: "700",
+    },
+
+    paidButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#e2e8f0",
+        color: "#64748b",
+        cursor: "not-allowed",
+        fontSize: "13px",
+        fontWeight: "700",
+    },
+
+    waitButton: {
+        padding: "9px 14px",
+        borderRadius: "10px",
+        border: "none",
+        background: "#f1f5f9",
+        color: "#94a3b8",
+        cursor: "not-allowed",
+        fontSize: "13px",
+        fontWeight: "700",
     },
 };
