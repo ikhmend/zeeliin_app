@@ -124,59 +124,64 @@ export default function LoanDetail() {
         });
     };
 
-    const handlePayInstallment = async (installment) => {
-        const remainingAmount = getInstallmentRemainingAmount(installment);
+const handlePayInstallment = async (installment) => {
 
-        if (!remainingAmount || remainingAmount <= 0) {
-            alert("Төлөх дүн олдсонгүй.");
-            return;
-        }
+    const remainingAmount = getInstallmentRemainingAmount(installment);
 
-        const ok = window.confirm(
-            `${formatMoney(remainingAmount, loan?.currency || "MNT")} төлөх үү?`
-        );
+    if (!remainingAmount || remainingAmount <= 0) {
+        alert("Төлөх дүн олдсонгүй.");
+        return;
+    }
 
-        if (!ok) return;
-
-        try {
-            setPayingId(installment.id);
-            const today = new Date().toISOString().slice(0, 10);
-
-            await makeLoanPayment(loanId, {
-                payment_amount: remainingAmount,
-                payment_date: today,
-                payment_method: "cash",
-                note: `Customer web payment. Installment ID: ${installment.id}`,
-                });
-            const [loanData, installmentData] = await Promise.all([
-                getLoanDetail(loanId),
-                getLoanInstallments(loanId),
-            ]);
-
-            setLoan(loanData);
-            setInstallments(installmentData || []);
-        } catch (err) {
-            console.error("Make payment error:", err);
-            alert(err.response?.data?.message || "Төлбөр хийх үед алдаа гарлаа");
-        } finally {
-            setPayingId(null);
-        }
-    };
-
-    const totalPages = Math.max(1, Math.ceil(installments.length / PAGE_SIZE));
-
-    const paginatedInstallments = installments.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE
+    const method = window.prompt(
+        "Төлбөрийн арга сонгоно уу:\n1 - Бэлэн\n2 - Банкны шилжүүлэг\n3 - QPay\n4 - Карт"
     );
 
-    const handlePrevPage = () => {
-        setCurrentPage((prev) => Math.max(1, prev - 1));
+    const paymentMethodMap = {
+        "1": "bank_transfer",
+        "2": "qpay",
+        "3": "card",
     };
 
-    const handleNextPage = () => {
-        setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-    };
+    const paymentMethod = paymentMethodMap[method];
+
+    if (!paymentMethod) {
+        alert("Төлбөрийн арга буруу байна.");
+        return;
+    }
+
+    const ok = window.confirm(
+        `${formatMoney(remainingAmount, loan?.currency || "MNT")} төлөх үү?`
+    );
+
+    if (!ok) return;
+
+    try {
+        setPayingId(installment.id);
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        await makeLoanPayment(loanId, {
+        payment_amount: remainingAmount,
+        payment_date: today,
+        payment_method: paymentMethod,
+        note: `Customer web payment. Installment ID: ${installment.id}`,
+        });
+
+        const [loanData, installmentData] = await Promise.all([
+        getLoanDetail(loanId),
+        getLoanInstallments(loanId),
+        ]);
+
+        setLoan(loanData);
+        setInstallments(installmentData || []);
+    } catch (err) {
+        console.error("Make payment error:", err);
+        alert(err.response?.data?.message || "Төлбөр хийх үед алдаа гарлаа");
+    } finally {
+        setPayingId(null);
+    }
+};
 
     useEffect(() => {
         async function loadLoanDetail() {
