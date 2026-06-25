@@ -163,8 +163,9 @@ const handlePayInstallment = async (installment) => {
         const today = new Date().toISOString().slice(0, 10);
 
         await makeLoanPayment(loanId, {
-        payment_amount: paymentAmount,
+        payment_amount: remainingAmount,
         payment_method: paymentMethod,
+        note: `Customer web payment. Installment ID: ${installment.id}`
         });
 
         const [loanData, installmentData] = await Promise.all([
