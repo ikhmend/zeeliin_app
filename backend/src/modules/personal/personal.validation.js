@@ -51,7 +51,7 @@ export const updateProfileSchema = z.object({
       home_phone: z
         .string()
         .trim()
-        .regex(/^\d{8}$/, "Утасны дугаар яг 8 оронтой байна.")
+        .regex(/^\d{8}$/, "Утасны дугаар 8 оронтой байна.")
         .optional(),
       email: z
         .string()
