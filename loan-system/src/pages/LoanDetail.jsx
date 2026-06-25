@@ -163,7 +163,7 @@ const handlePayInstallment = async (installment) => {
         const today = new Date().toISOString().slice(0, 10);
 
         await makeLoanPayment(loanId, {
-        payment_date: today,
+        payment_amount: paymentAmount,
         payment_method: paymentMethod,
         });
 
