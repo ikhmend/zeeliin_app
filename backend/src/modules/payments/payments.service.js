@@ -40,7 +40,7 @@ export async function makePayment(id, paymentData) {
       const updateData = {remaining_amount:remainingAmount - payForInstallment, status: isFullyPaid ? "paid" : "partial",paid_date: isFullyPaid ? payment_date: null, paid_amount: Number(installment.paid_amount || 0) + payForInstallment,
       };
       const updatedInstallment = await installmentsRepository.updateInstallmentPayment(installment.id, updateData, transaction);
-      const newPayment = {loan_id: loan.id, installment_id: installment.id,payment_amount: payForInstallment, payment_date, payment_method: payment_method.trim(), received_user_id: received_user_id || null, note: note?.trim() || "",};
+      const newPayment = {loan_id: loan.id, installment_id: installment.id,payment_amount: payForInstallment, payment_date: new Date(), payment_method: payment_method.trim(), received_user_id: received_user_id || null, note: note?.trim() || "",};
       const createdPayment = await paymentsRepository.createPayment(newPayment, transaction);
       paidInstallments.push(updatedInstallment);
       payments.push(createdPayment);

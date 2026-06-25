@@ -29,7 +29,8 @@ export const makePaymentSchema = z.object({
       .trim()
       .max(500, "Тайлбар хамгийн ихдээ 500 тэмдэгт байна.")
       .optional(),
-    }),
+    })
+    .strict(),
   params: z.object({
     loanId: z.coerce
       .number()

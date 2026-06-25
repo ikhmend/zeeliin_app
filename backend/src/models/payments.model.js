@@ -20,9 +20,10 @@ const Payment=sequelize.define(
             type:DataTypes.DECIMAL(15, 2),
             allowNull:false,
         },
-        payment_date:{
-            type:DataTypes.DATEONLY,
-            allowNull:false,
+        payment_date: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
         },
         payment_method:{
             type:DataTypes.STRING,
