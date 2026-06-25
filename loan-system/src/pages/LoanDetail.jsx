@@ -134,16 +134,17 @@ const handlePayInstallment = async (installment) => {
     }
 
     const method = window.prompt(
-        "Төлбөрийн арга сонгоно уу:\n1 - Бэлэн\n2 - Банкны шилжүүлэг\n3 - QPay\n4 - Карт"
-    );
+        "Төлбөрийн арга сонгоно уу:\n1 - Банкны шилжүүлэг\n2 - QPay\n3 - Карт"
+        );
 
     const paymentMethodMap = {
+
         "1": "bank_transfer",
         "2": "qpay",
         "3": "card",
-    };
+        };
 
-    const paymentMethod = paymentMethodMap[method];
+    const paymentMethod = paymentMethodMap[String(method).trim()];
 
     if (!paymentMethod) {
         alert("Төлбөрийн арга буруу байна.");
@@ -163,9 +164,8 @@ const handlePayInstallment = async (installment) => {
 
         await makeLoanPayment(loanId, {
         payment_amount: remainingAmount,
-        payment_date: today,
         payment_method: paymentMethod,
-        note: `Customer web payment. Installment ID: ${installment.id}`,
+        note: `Customer web payment. Installment ID: ${installment.id}`
         });
 
         const [loanData, installmentData] = await Promise.all([
@@ -181,6 +181,25 @@ const handlePayInstallment = async (installment) => {
     } finally {
         setPayingId(null);
     }
+};
+const totalPages = Math.max(
+    1,
+    Math.ceil(installments.length / PAGE_SIZE)
+);
+
+const paginatedInstallments = installments.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+);
+
+const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+};
+
+const handleNextPage = () => {
+    setCurrentPage((prev) =>
+        Math.min(totalPages, prev + 1)
+    );
 };
 
     useEffect(() => {
