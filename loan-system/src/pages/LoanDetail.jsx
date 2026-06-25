@@ -164,7 +164,6 @@ const handlePayInstallment = async (installment) => {
 
         await makeLoanPayment(loanId, {
         payment_amount: remainingAmount,
-        payment_date: today,
         payment_method: paymentMethod,
         note: `Customer web payment. Installment ID: ${installment.id}`
         });
