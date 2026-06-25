@@ -151,11 +151,32 @@ const handlePayInstallment = async (installment) => {
         return;
     }
 
-    const ok = window.confirm(
-        `${formatMoney(remainingAmount, loan?.currency || "MNT")} төлөх үү?`
-    );
+    const amountInput = window.prompt(
+    `Төлөх дүнгээ оруулна уу. Боломжит үлдэгдэл: ${formatMoney(
+        remainingAmount,
+        loan?.currency || "MNT"
+    )}`
+);
 
-    if (!ok) return;
+        if (!amountInput) return;
+
+        const paymentAmount = Number(amountInput);
+
+        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+            alert("Төлөх дүн буруу байна.");
+            return;
+        }
+
+        if (paymentAmount > remainingAmount) {
+            alert("Үлдэгдлээс их дүн төлөх боломжгүй.");
+            return;
+        }
+
+        const ok = window.confirm(
+            `${formatMoney(paymentAmount, loan?.currency || "MNT")} төлөх үү?`
+        );
+
+        if (!ok) return;
 
     try {
         setPayingId(installment.id);
@@ -163,7 +184,7 @@ const handlePayInstallment = async (installment) => {
         const today = new Date().toISOString().slice(0, 10);
 
         await makeLoanPayment(loanId, {
-        payment_amount: remainingAmount,
+        payment_amount: paymentAmount,
         payment_method: paymentMethod,
         note: `Customer web payment. Installment ID: ${installment.id}`
         });
