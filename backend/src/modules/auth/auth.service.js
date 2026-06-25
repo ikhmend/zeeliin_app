@@ -174,9 +174,6 @@ export async function verifyPasswordResetToken(token) {
   return resetRecord;
 }
 export async function resetPassword(token, newPassword) {
-    if(!newPassword || newPassword.length<8){
-        throw new AppError("Нууц үг хамгийн багадаа 8 тэмдэгт байна.", 400)
-    }
   const resetRecord = await verifyPasswordResetToken(token);
   const passwordHash = await bcrypt.hash(newPassword, 12);
   return await sequelize.transaction(async (transaction)=> {
