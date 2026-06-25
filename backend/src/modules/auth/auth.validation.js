@@ -25,46 +25,39 @@ export const passwordSchema= z.object({
     query: z.object({}),
 });
 export const forgotPasswordSchema = z.object({
-  email: z
-    .string({
-      required_error: "И-мэйл хаяг заавал шаардлагатай.",
-      invalid_type_error: "И-мэйл хаяг текст байх ёстой.",
-    })
-    .trim()
-    .min(1, "И-мэйл хаяг оруулна уу.")
-    .email("И-мэйл хаягийн формат буруу байна.")
-    .max(255, "И-мэйл хаяг хэт урт байна.")
-    .transform((email) => email.toLowerCase()),
-});
-export const resetPasswordSchema = z
-  .object({
-    token: z
-      .string({
-        required_error: "Нууц үг сэргээх token шаардлагатай.",
-        invalid_type_error: "Token текст байх ёстой.",
-      })
+  body: z.object({
+    email: z
+      .string()
       .trim()
-      .min(20, "Нууц үг сэргээх token буруу байна."),
-    newPassword: z
-      .string({
-        required_error: "Шинэ нууц үг заавал шаардлагатай.",
-        invalid_type_error: "Нууц үг текст байх ёстой.",
-      })
-      .min(8, "Нууц үг хамгийн багадаа 8 тэмдэгт байна.")
-      .max(72, "Нууц үг хамгийн ихдээ 72 тэмдэгт байна.")
-      .regex(/[a-z]/, "Нууц үг жижиг үсэг агуулсан байна.")
-      .regex(/[A-Z]/, "Нууц үг том үсэг агуулсан байна.")
-      .regex(/[0-9]/, "Нууц үг тоо агуулсан байна."),
-
-    confirmPassword: z.string({
-      required_error: "Нууц үгээ давтан оруулах шаардлагатай.",
-      invalid_type_error: "Нууц үг текст байх ёстой.",
-    }),
-  })
-  .refine(
-    (data) => data.newPassword === data.confirmPassword,
-    {
-      message: "Нууц үгнүүд хоорондоо таарахгүй байна.",
-      path: ["confirmPassword"],
-    }
-  );
+      .email("И-мэйл хаягийн формат буруу байна.")
+      .transform((email) => email.toLowerCase()),
+  }),
+});
+export const resetPasswordSchema = z.object({
+  body: z
+    .object({
+      token: z
+        .string()
+        .trim()
+        .min(20, "Нууц үг сэргээх token буруу байна."),
+      newPassword: z
+        .string()
+        .min(8, "Нууц үг хамгийн багадаа 8 тэмдэгт байна.")
+        .max(72, "Нууц үг хамгийн ихдээ 72 тэмдэгт байна.")
+        .regex(/[a-z]/, "Нууц үг жижиг үсэг агуулсан байна.")
+        .regex(/[A-Z]/, "Нууц үг том үсэг агуулсан байна.")
+        .regex(/[0-9]/, "Нууц үг тоо агуулсан байна."),
+      confirmPassword: z
+        .string()
+        .min(1, "Нууц үгээ давтан оруулна уу."),
+    })
+    .refine(
+      (data) => data.newPassword === data.confirmPassword,
+      {
+        message: "Нууц үгнүүд хоорондоо таарахгүй байна.",
+        path: ["confirmPassword"],
+      }
+    ),
+  params: z.object({}),
+  query: z.object({}),
+});

@@ -12,5 +12,5 @@ router.patch("/password", passwordChangeLimit, authMiddleware, validateRequest(p
 router.post("/refresh", authController.refresh);
 router.post("/logout", authController.logout);
 router.post("/forgot-password", forgotPasswordIpLimiter, forgotPasswordEmailLimiter, validateRequest(forgotPasswordSchema), authController.forgotPassword);
-router.post("/reset-password", resetPasswordLimiter, validateRequest(resetPasswordLimiter), authController.resetPassword);
+router.post("/reset-password", resetPasswordLimiter, validateRequest(resetPasswordSchema), authController.resetPassword);
 export default router;
