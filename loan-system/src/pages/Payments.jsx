@@ -143,7 +143,6 @@ export default function Payments() {
     const handlePrevPage = () => {
         setCurrentPage((prev) => Math.max(1, prev - 1));
     };
-
     const handleNextPage = () => {
         setCurrentPage((prev) => Math.min(totalPages, prev + 1));
     };

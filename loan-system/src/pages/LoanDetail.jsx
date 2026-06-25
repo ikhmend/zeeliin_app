@@ -143,12 +143,9 @@ export default function LoanDetail() {
             const today = new Date().toISOString().slice(0, 10);
 
             await makeLoanPayment(loanId, {
-                payment_amount: remainingAmount,
-                payment_date: today,
-                payment_method: "mock",
-                note: `Customer web mock payment. Installment ID: ${installment.id}`,
+                amount: remainingAmount,
+                payment_method: "cash",
             });
-
             const [loanData, installmentData] = await Promise.all([
                 getLoanDetail(loanId),
                 getLoanInstallments(loanId),
