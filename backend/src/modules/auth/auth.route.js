@@ -5,6 +5,10 @@ import * as authController from "./auth.controller.js";
 import { authMiddleware } from "./auth.middleware.js";
 import {limitRate, regsiterLimit, passwordChangeLimit, forgotPasswordEmailLimiter, forgotPasswordIpLimiter, resetPasswordLimiter} from "../../middlewares/rateLimiting.js"
 const router=express.Router();
+router.use((req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    next();
+});
 router.post("/register", regsiterLimit, authController.register);
 router.post("/login", limitRate, validateRequest(loginSchema), authController.login); 
 router.get("/personal", authMiddleware, authController.getMe); 

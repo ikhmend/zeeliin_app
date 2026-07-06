@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import getDashboardData from "../api/dashboardApi";
+import getDashboardData from "../api/DashboardApi";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -31,12 +31,8 @@ export default function Dashboard() {
 
                 const result = await getDashboardData();
 
-                console.log("DASHBOARD FINAL DATA:", result);
-
                 setData(result);
             } catch (error) {
-                console.error("Dashboard error:", error);
-                console.error("Dashboard error response:", error.response?.data);
 
                 setError(
                     error.response?.data?.error ||

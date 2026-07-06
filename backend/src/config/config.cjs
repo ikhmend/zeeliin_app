@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 module.exports = {
   development: {
     username: process.env.DB_USER,

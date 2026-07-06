@@ -13,11 +13,11 @@ export async function sendPasswordResetEmail(email, resetLink) {
     from: process.env.SMTP_FROM,
     to: email,
     subject: "Нууц үг сэргээх",
-    text: `Ok nuuts ugee martchihsan uu? ok iishee or: ${resetLink}`,
+    text: `Нууц үгээ сэргээхийн тулд дараах холбоосоор 15 минутын дотор орно уу: ${resetLink}`,
     html: `
-      <p>ene holboos deer dar</p>
+      <p>Нууц үгээ сэргээхийн тулд дараах холбоос дээр дарна уу.</p>
       <a href="${resetLink}">Нууц үг сэргээх</a>
-      <p>15 minutiin dotor solioroi ok.</p>
+      <p>Энэ холбоос 15 минутын хугацаанд хүчинтэй.</p>
     `,
   });
 }

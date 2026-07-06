@@ -8,8 +8,6 @@ export async function getMyLoans() {
         },
     });
 
-    console.log("MY LOANS RAW:", res.data);
-
     return res.data.data || [];
 }
 
@@ -20,8 +18,6 @@ export async function getLoanDetail(loanId) {
             Pragma: "no-cache",
         },
     });
-
-    console.log("LOAN DETAIL RAW:", res.data);
 
     return res.data.data || null;
 }
@@ -34,8 +30,6 @@ export async function getLoanInstallments(loanId) {
         },
     });
 
-    console.log("LOAN INSTALLMENTS RAW:", res.data);
-
     return res.data.data || [];
 }
 
@@ -47,8 +41,6 @@ export async function getLoanPayments(loanId) {
         },
     });
 
-    console.log("LOAN PAYMENTS RAW:", res.data);
-
     return res.data.data || [];
 }
 export async function getMyPayments() {
@@ -58,8 +50,6 @@ export async function getMyPayments() {
             Pragma: "no-cache",
         },
     });
-
-    console.log("MY PAYMENTS RAW:", res.data);
 
     return res.data.data || [];
 }
@@ -74,8 +64,6 @@ export async function makeLoanPayment(loanId, paymentData) {
             },
         }
     );
-
-    console.log("MAKE MY PAYMENT RAW:", res.data);
 
     return res.data.data || res.data;
 }

@@ -21,8 +21,15 @@ export function mapCustomerProfile(customer) {
     first_name: customer.first_name,
     register_no: customer.register_no,
     phone: customer.phone,
+    home_phone: customer.home_phone,
     email: customer.email,
+    social: customer.social,
+    activity_dir: customer.activity_dir,
+    business_type: customer.business_type,
+    education: customer.education,
+    profession: customer.profession,
     birth_date: customer.birth_date,
+    official_address: customer.official_address,
     current_address: customer.current_address,
   };
 }

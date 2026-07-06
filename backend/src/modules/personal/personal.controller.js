@@ -10,7 +10,7 @@ export const getProfile= asyncHandler(async (req, res) => {
     return Success(res, data);
 }); 
 export const updateProfile= asyncHandler(async (req, res) => {
-    const data= await personalService.updateProfile(req.user.customer_id, req.validated.body);
+    const data= await personalService.updateProfile(req.user.id, req.user.customer_id, req.validated.body);
     return Success(res, data, 200, "Амжилттай шинэчлэгдлээ.");
 });
 export const getMyLoans= asyncHandler(async (req, res) => {

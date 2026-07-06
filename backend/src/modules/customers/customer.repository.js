@@ -1,7 +1,7 @@
 import Customer from "../../models/customer.model.js";
 import Employment from "../../models/employments.model.js";
-export async function findCustomer(id){
-    return await Customer.findByPk(id);
+export async function findCustomer(id, transaction = null){
+    return await Customer.findByPk(id, { transaction });
 }
 export async function findCustomerProfile(id) {
   return await Customer.findByPk(id, {
@@ -24,15 +24,10 @@ export async function findCustomerByRegisterNo(reg_no){
     where:{register_no: reg_no},
   });
 }
-export async function updateCustomer(customerId, updateData){
-  const customer = await Customer.findByPk(customerId);
+export async function updateCustomer(customerId, updateData, transaction = null){
+  const customer = await Customer.findByPk(customerId, { transaction });
   if(!customer){
     return null;
   }
-  return await Customer.update(updateData, {
-    where: {
-      id: customer.id,
-    },
-      returning: true,
-  });
+  return await customer.update(updateData, { transaction });
 }

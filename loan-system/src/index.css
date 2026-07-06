@@ -347,3 +347,24 @@ code {
     display: none !important;
   }
 }
+/* Authentication and standalone feedback states */
+.auth-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  background: #f8fafc;
+}
+
+.auth-success-message,
+.auth-error-message {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.auth-success-message { color: #166534; background: #dcfce7; }
+.auth-error-message { color: #991b1b; background: #fee2e2; }

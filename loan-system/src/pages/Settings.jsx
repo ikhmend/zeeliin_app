@@ -10,8 +10,22 @@ const DEFAULT_SETTINGS = {
     theme: "light",
     };
 
+const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.style.background = theme === "dark" ? "#0f172a" : "#f8fafc";
+    document.body.style.color = theme === "dark" ? "#e5e7eb" : "#0f172a";
+};
+
+function loadSavedSettings() {
+    try {
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("customer_settings") || "{}") };
+    } catch {
+        return DEFAULT_SETTINGS;
+    }
+}
+
     export default function Settings({ onLogout }) {
-    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+    const [settings, setSettings] = useState(loadSavedSettings);
     const [settingsMessage, setSettingsMessage] = useState("");
     const [settingsError, setSettingsError] = useState("");
 
@@ -27,31 +41,8 @@ const DEFAULT_SETTINGS = {
     });
 
     useEffect(() => {
-        const savedSettings = localStorage.getItem("customer_settings");
-
-        if (savedSettings) {
-        try {
-            const parsedSettings = {
-            ...DEFAULT_SETTINGS,
-            ...JSON.parse(savedSettings),
-            };
-
-            setSettings(parsedSettings);
-            applyTheme(parsedSettings.theme);
-        } catch (error) {
-            console.error("Settings parse error:", error);
-            applyTheme(DEFAULT_SETTINGS.theme);
-        }
-        } else {
-        applyTheme(DEFAULT_SETTINGS.theme);
-        }
-    }, []);
-
-    const applyTheme = (theme) => {
-        document.documentElement.setAttribute("data-theme", theme);
-        document.body.style.background = theme === "dark" ? "#0f172a" : "#f8fafc";
-        document.body.style.color = theme === "dark" ? "#e5e7eb" : "#0f172a";
-    };
+        applyTheme(settings.theme);
+    }, [settings.theme]);
 
     const handleToggle = (name) => {
         setSettings((prev) => ({
@@ -71,10 +62,6 @@ const DEFAULT_SETTINGS = {
             ...prev,
             [name]: value,
         };
-
-        if (name === "theme") {
-            applyTheme(value);
-        }
 
         return updated;
         });
@@ -101,7 +88,7 @@ const DEFAULT_SETTINGS = {
         applyTheme(settings.theme);
         setSettingsMessage("Тохиргоо амжилттай хадгалагдлаа.");
         setSettingsError("");
-        } catch (error) {
+        } catch {
         setSettingsError("Тохиргоо хадгалахад алдаа гарлаа.");
         setSettingsMessage("");
         }
@@ -152,8 +139,6 @@ const DEFAULT_SETTINGS = {
             if (onLogout) {
             await onLogout();
             } else {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
             window.location.href = "/login";
             }
         }, 1200);

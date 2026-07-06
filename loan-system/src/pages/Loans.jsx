@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function Loans() {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const formatMoney = (amount, currency = "MNT") => {
@@ -32,10 +33,11 @@ export default function Loans() {
     useEffect(() => {
         const loadLoans = async () => {
             try {
+                setError("");
                 const result = await getMyLoans();
                 setLoans(result);
             } catch (error) {
-                console.error("Loans error:", error);
+                setError(error.response?.data?.message || "Зээлийн мэдээлэл авахад алдаа гарлаа.");
             } finally {
                 setLoading(false);
             }
@@ -47,6 +49,7 @@ export default function Loans() {
     if (loading) {
         return <p style={styles.message}>Уншиж байна...</p>;
     }
+    if (error) return <p style={styles.message}>{error}</p>;
 
     return (
         <div style={styles.container} className="page-container">

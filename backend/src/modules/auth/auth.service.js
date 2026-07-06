@@ -4,8 +4,7 @@ import * as authRepository from "./auth.repository.js";
 import * as customerRepository from "../customers/customer.repository.js"
 import sequelize from "../../config/sequelize.js";
 import AppError from "../../utility/AppError.js";
-import cookieParser from "cookie-parser";
-import crypto, { randomBytes } from "crypto";
+import crypto from "crypto";
 import * as passRepository from "./password.reset.repesitory.js";
 import { sendPasswordResetEmail } from "../../utility/email.service.js";
 export async function login(loginData) {
@@ -141,7 +140,7 @@ export async function refresh(refreshToken){
     if (Number(session.user_id) !== Number(decoded.id)) {
         throw new AppError("Refresh token болон session тохирохгүй байна.",401);
     }
-    const newToken= jwt.sign({id: user.id, customer_id: user.customer_id,}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
+    const newToken= jwt.sign({id: user.id, customer_id: user.customer_id, role: user.role}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN || "1h",});
     return {token: newToken};
 }
 export async function logout(refreshToken) {
@@ -155,7 +154,7 @@ export async function logout(refreshToken) {
 export async function createPasswordResetToken(email) {
   const user = await authRepository.findUserByUnique({ email });
   if (!user) {
-    throw new AppError("Алдаа гарлаа, дахин оролдоно уу", 400);
+    return true;
   }
   const token = crypto.randomBytes(32).toString("hex");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");

@@ -1,6 +1,22 @@
 import { useEffect, useState } from "react";
 import { getMyProfile, updateMyProfile } from "../api/ProfileApi";
 
+function profileToForm(data) {
+    const acc = data?.account || {};
+    const prof = data?.profile || {};
+    return {
+        email: prof.email || acc.email || "",
+        phone: String(prof.phone || acc.phone || ""),
+        current_address: prof.current_address || "",
+        official_address: prof.official_address || "",
+        social: prof.social || "",
+        activity_dir: prof.activity_dir || "",
+        business_type: prof.business_type || "",
+        education: prof.education || "",
+        profession: prof.profession || "",
+    };
+}
+
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
 
@@ -42,23 +58,6 @@ export default function Profile() {
         });
     };
 
-    const fillForm = (data) => {
-        const acc = data?.account || {};
-        const prof = data?.profile || {};
-
-        setForm({
-            email: prof.email || acc.email || "",
-            phone: String(prof.phone || acc.phone || ""),
-            current_address: prof.current_address || "",
-            official_address: prof.official_address || "",
-            social: prof.social || "",
-            activity_dir: prof.activity_dir || "",
-            business_type: prof.business_type || "",
-            education: prof.education || "",
-            profession: prof.profession || "",
-        });
-    };
-
     const loadProfile = async () => {
         try {
             setLoading(true);
@@ -66,14 +65,9 @@ export default function Profile() {
 
             const data = await getMyProfile();
 
-            console.log("PROFILE FINAL:", data);
-
             setProfileData(data);
-            fillForm(data);
+            setForm(profileToForm(data));
         } catch (err) {
-            console.error("Profile error:", err);
-            console.error("Profile response:", err.response?.data);
-
             setError(
                 err.response?.data?.message ||
                 err.response?.data?.error ||
@@ -86,7 +80,19 @@ export default function Profile() {
     };
 
     useEffect(() => {
-        loadProfile();
+        let active = true;
+        getMyProfile()
+            .then((data) => {
+                if (!active) return;
+                setProfileData(data);
+                setForm(profileToForm(data));
+            })
+            .catch((err) => {
+                if (!active) return;
+                setError(err.response?.data?.message || err.response?.data?.error || err.message || "Профайл мэдээлэл авахад алдаа гарлаа");
+            })
+            .finally(() => active && setLoading(false));
+        return () => { active = false; };
     }, []);
 
     const handleChange = (e) => {
@@ -99,7 +105,7 @@ export default function Profile() {
     };
 
     const handleCancel = () => {
-        fillForm(profileData);
+        setForm(profileToForm(profileData));
         setEditMode(false);
         setError("");
         setSuccess("");
@@ -132,9 +138,6 @@ export default function Profile() {
 
             await loadProfile();
         } catch (err) {
-            console.error("Update profile error:", err);
-            console.error("Update profile response:", err.response?.data);
-
             setError(
                 err.response?.data?.message ||
                 err.response?.data?.error ||

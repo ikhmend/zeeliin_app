@@ -111,14 +111,9 @@ export default function Payments() {
 
                 const data = await getMyPayments();
 
-                console.log("PAYMENTS FINAL:", data);
-
                 setPayments(data || []);
                 setCurrentPage(1);
             } catch (err) {
-                console.error("Payments error:", err);
-                console.error("Payments response:", err.response?.data);
-
                 setError(
                     err.response?.data?.error ||
                     err.response?.data?.message ||

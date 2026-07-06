@@ -6,6 +6,7 @@ import * as paymentsRepository from "../payments/payments.repository.js";
 import * as paymentsService from "../payments/payments.service.js";
 import * as installmentsService from "../installments/installments.service.js";
 import AppError from "../../utility/AppError.js";
+import sequelize from "../../config/sequelize.js";
 import { mapProfileResponse, mapDashboardResponse, mapPayment, mapInstallment } from "./personal.mapper.js";
 export async function getProfileData(userId, customerId) {
   const user = await authRepository.findUserById(userId);
@@ -18,11 +19,7 @@ export async function getProfileData(userId, customerId) {
   }
   return mapProfileResponse(user, customerProfile);
 }
-export async function updateProfile(customerId, customerData) {
-  const customer =await customerRepository.findCustomer(customerId);
-  if (!customer) { 
-    throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
-  }
+export async function updateProfile(userId, customerId, customerData) {
   const allowedFields = ["phone", "home_phone", "email", "social", "activity_dir", "business_type", "education", "profession", "official_address", "current_address",];
   const updateData = {};
   for (const field of allowedFields) {
@@ -33,7 +30,34 @@ export async function updateProfile(customerId, customerData) {
   if (Object.keys(updateData).length === 0) {
     throw new AppError("Өөрчлөх мэдээлэл олдсонгүй.", 400);
   }
-  return await customerRepository.updateCustomer(customerId, updateData);
+  const contactData = {};
+  if (updateData.email !== undefined) {
+    updateData.email = updateData.email?.trim().toLowerCase() || null;
+    contactData.email = updateData.email;
+  }
+  if (updateData.phone !== undefined) {
+    updateData.phone = updateData.phone.trim();
+    contactData.phone = updateData.phone;
+  }
+
+  return await sequelize.transaction(async (transaction) => {
+    const customer = await customerRepository.findCustomer(customerId, transaction);
+    const user = await authRepository.findUserById(userId, transaction);
+    if (!customer || !user || Number(user.customer_id) !== Number(customerId)) {
+      throw new AppError("Хэрэглэгчийн профайл олдсонгүй.", 404);
+    }
+
+    const conflict = await authRepository.findContactConflict(userId, contactData, transaction);
+    if (conflict) {
+      throw new AppError("И-мэйл эсвэл утасны дугаар өөр бүртгэлд ашиглагдсан байна.", 409);
+    }
+
+    const updatedCustomer = await customerRepository.updateCustomer(customerId, updateData, transaction);
+    if (Object.keys(contactData).length > 0) {
+      await authRepository.updateUserContact(userId, contactData, transaction);
+    }
+    return Object.fromEntries(allowedFields.map((field) => [field, updatedCustomer[field]]));
+  });
 }
 export async function getMyLoans(customerId) {
   const customer = await customerRepository.findCustomer(customerId);

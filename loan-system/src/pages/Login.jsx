@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../styles/loginStyles"; 
 import { loginUser } from "../services/authService";
 import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
@@ -12,6 +12,7 @@ export default function Login({ onLogin }) {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogin = async () => {
         if (!username || !password) {
@@ -25,12 +26,8 @@ export default function Login({ onLogin }) {
             const responseData = await loginUser(username.trim().toLowerCase(), password);
 
             if (responseData && responseData.data) {
-                const { token, user } = responseData.data;
-
-                localStorage.setItem("token", token);
-                localStorage.setItem("user", JSON.stringify(user));
-
-                onLogin();
+                const { user } = responseData.data;
+                onLogin(user);
                 navigate("/dashboard", { replace: true });
             } else {
                 setError("Нэвтрэх мэдээлэл дутуу ирлээ.");
@@ -68,6 +65,9 @@ export default function Login({ onLogin }) {
                     </div>
 
                     <h2 style={styles.formTitle}>Login</h2>
+                    {location.state?.passwordReset && (
+                        <div className="auth-success-message">Нууц үг шинэчлэгдлээ. Шинэ нууц үгээрээ нэвтэрнэ үү.</div>
+                    )}
                     <div style={{ ...styles.inputWrapper, marginBottom: "20px" }}>
                         <FiUser style={styles.inputIcon} />
                         <input
@@ -107,6 +107,11 @@ export default function Login({ onLogin }) {
                         {loading ? "Logging in..." : "Login"}
                     </button>
 
+                    <p style={styles.footer}>
+                        <span style={styles.footerLink} onClick={() => navigate("/forgot-password")}>
+                            Нууц үгээ мартсан уу?
+                        </span>
+                    </p>
                     <p style={styles.footer}>
                         Шинэ хэрэглэгч үү?{" "}
                         <span style={styles.footerLink} onClick={() => navigate("/register")}>

@@ -1,8 +1,8 @@
 import { Op } from "sequelize";
 import User from "../../models/user.model.js";
 import Session from "../../models/sessions.model.js";
-export async function findUserById(id){
-    return await User.findByPk(id);
+export async function findUserById(id, transaction = null){
+    return await User.findByPk(id, { transaction });
 }
 export async function findUserByLogin(login) {
   return await User.findOne({
@@ -95,4 +95,23 @@ export async function updateUserPassword(userId, passwordHash, transaction=null)
       where: { id: userId }, transaction
     },
   );
+}
+export async function findContactConflict(userId, { phone, email }, transaction = null) {
+  const conditions = [];
+  if (phone) conditions.push({ phone });
+  if (email) conditions.push({ email });
+  if (conditions.length === 0) return null;
+  return await User.findOne({
+    where: {
+      id: { [Op.ne]: userId },
+      [Op.or]: conditions,
+    },
+    transaction,
+  });
+}
+
+export async function updateUserContact(userId, contactData, transaction = null) {
+  const user = await User.findByPk(userId, { transaction });
+  if (!user) return null;
+  return await user.update(contactData, { transaction });
 }

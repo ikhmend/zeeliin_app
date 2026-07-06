@@ -8,8 +8,6 @@ export async function getMyProfile() {
         },
     });
 
-    console.log("MY PROFILE RAW:", res.data);
-
     return res.data.data || null;
 }
 
@@ -20,8 +18,6 @@ export async function updateMyProfile(profileData) {
             Pragma: "no-cache",
         },
     });
-
-    console.log("UPDATE PROFILE RAW:", res.data);
 
     return res.data.data || res.data;
 }

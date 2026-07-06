@@ -5,6 +5,7 @@ import {
     getLoanInstallments,
     makeLoanPayment,
 } from "../api/LoansApi";
+import PaymentFeedback from "../components/PaymentFeedback";
 
 const PAGE_SIZE = 5;
 
@@ -18,6 +19,7 @@ export default function LoanDetail() {
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [payingId, setPayingId] = useState(null); 
+    const [paymentFeedback, setPaymentFeedback] = useState(null);
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -129,7 +131,7 @@ const handlePayInstallment = async (installment) => {
     const remainingAmount = getInstallmentRemainingAmount(installment);
 
     if (!remainingAmount || remainingAmount <= 0) {
-        alert("Төлөх дүн олдсонгүй.");
+        setPaymentFeedback({ type: "error", title: "Төлөлт хийх боломжгүй", message: "Төлөх дүн олдсонгүй." });
         return;
     }
 
@@ -147,7 +149,7 @@ const handlePayInstallment = async (installment) => {
     const paymentMethod = paymentMethodMap[String(method).trim()];
 
     if (!paymentMethod) {
-        alert("Төлбөрийн арга буруу байна.");
+        setPaymentFeedback({ type: "error", title: "Төлбөрийн арга буруу", message: "Банк, QPay эсвэл картын сонголтоос сонгоно уу." });
         return;
     }
 
@@ -163,12 +165,12 @@ const handlePayInstallment = async (installment) => {
         const paymentAmount = Number(amountInput);
 
         if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
-            alert("Төлөх дүн буруу байна.");
+            setPaymentFeedback({ type: "error", title: "Төлөх дүн буруу", message: "Төлөх дүн 0-ээс их тоо байна." });
             return;
         }
 
         if (paymentAmount > remainingAmount) {
-            alert("Үлдэгдлээс их дүн төлөх боломжгүй.");
+            setPaymentFeedback({ type: "error", title: "Төлөх дүн хэтэрсэн", message: "Хуваарийн үлдэгдлээс их дүн төлөх боломжгүй." });
             return;
         }
 
@@ -180,8 +182,6 @@ const handlePayInstallment = async (installment) => {
 
     try {
         setPayingId(installment.id);
-
-        const today = new Date().toISOString().slice(0, 10);
 
         await makeLoanPayment(loanId, {
         payment_amount: paymentAmount,
@@ -196,9 +196,18 @@ const handlePayInstallment = async (installment) => {
 
         setLoan(loanData);
         setInstallments(installmentData || []);
+        const methodNames = { bank_transfer: "Банкны шилжүүлэг", qpay: "QPay", card: "Карт" };
+        setPaymentFeedback({
+            type: "success",
+            title: "Төлөлт амжилттай",
+            message: "Таны төлөлт бүртгэгдлээ.",
+            details: [
+                { label: "Дүн", value: formatMoney(paymentAmount, loan?.currency || "MNT") },
+                { label: "Арга", value: methodNames[paymentMethod] },
+            ],
+        });
     } catch (err) {
-        console.error("Make payment error:", err);
-        alert(err.response?.data?.message || "Төлбөр хийх үед алдаа гарлаа");
+        setPaymentFeedback({ type: "error", title: "Төлөлт амжилтгүй", message: err.response?.data?.message || "Төлбөр хийх үед алдаа гарлаа." });
     } finally {
         setPayingId(null);
     }
@@ -238,7 +247,6 @@ const handleNextPage = () => {
                 setInstallments(installmentData || []);
                 setCurrentPage(1);
             } catch (err) {
-                console.error("Loan detail error:", err);
                 setError(err.response?.data?.error || "Зээлийн мэдээлэл авахад алдаа гарлаа");
             } finally {
                 setLoading(false);
@@ -262,6 +270,7 @@ const handleNextPage = () => {
 
     return (
         <div style={styles.container}>
+            <PaymentFeedback feedback={paymentFeedback} onClose={() => setPaymentFeedback(null)} />
             <button style={styles.backButton} onClick={() => navigate("/loans")}>
                 Буцах
             </button>
