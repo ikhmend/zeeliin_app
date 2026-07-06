@@ -6,7 +6,6 @@ import helmet from "helmet";
 import hpp from "hpp";
 import "./models/index.js";
 import sequelize from "./config/sequelize.js";
-import { closeRedis, connectRedis, isRedisConfigured, isRedisReady } from "./config/redis.js";
 import authRoutes from "./modules/auth/auth.route.js";
 import personalRoutes from "./modules/personal/personal.route.js";
 import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
@@ -58,11 +57,10 @@ app.get("/ready", async (req, res) => {
   } catch (error) {
     logger.warn("Readiness database check failed", { requestId: req.id, error });
   }
-  const redisReady = isRedisReady();
-  const ready = !shuttingDown && databaseReady && redisReady;
+  const ready = !shuttingDown && databaseReady;
   res.status(ready ? 200 : 503).json({
     status: ready ? "ready" : "not_ready",
-    checks: { database: databaseReady, redis: redisReady },
+    checks: { database: databaseReady },
   });
 });
 
@@ -80,7 +78,6 @@ app.get("/metrics", async (req, res) => {
   }
   res.type("text/plain; version=0.0.4").send(renderMetrics({
     databaseReady,
-    redisReady: isRedisReady(),
   }));
 });
 
@@ -93,16 +90,14 @@ app.use(errorHandler);
 async function start() {
   try {
     await sequelize.authenticate();
-    await connectRedis();
     server = app.listen(port, () => logger.info("HTTP server started", {
       port,
       environment: process.env.NODE_ENV || "development",
-      redisConfigured: isRedisConfigured(),
       trustProxyHops,
     }));
   } catch (error) {
     logger.error("Application startup failed", { error });
-    await Promise.allSettled([sequelize.close(), closeRedis()]);
+    await Promise.allSettled([sequelize.close()]);
     process.exit(1);
   }
 }
@@ -120,7 +115,7 @@ async function shutdown(signal) {
 
   try {
     if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-    await Promise.allSettled([sequelize.close(), closeRedis()]);
+    await Promise.allSettled([sequelize.close()]);
     clearTimeout(forceExit);
     logger.info("Graceful shutdown completed");
     process.exit(0);

@@ -32,7 +32,7 @@ export function requestObservability(req, res, next) {
   next();
 }
 
-export function renderMetrics({ databaseReady, redisReady }) {
+export function renderMetrics({ databaseReady }) {
   const lines = [
     "# HELP zeeliin_http_requests_total Total HTTP responses.",
     "# TYPE zeeliin_http_requests_total counter",
@@ -51,9 +51,6 @@ export function renderMetrics({ databaseReady, redisReady }) {
     "# HELP zeeliin_database_ready Database readiness state.",
     "# TYPE zeeliin_database_ready gauge",
     `zeeliin_database_ready ${databaseReady ? 1 : 0}`,
-    "# HELP zeeliin_redis_ready Redis readiness state.",
-    "# TYPE zeeliin_redis_ready gauge",
-    `zeeliin_redis_ready ${redisReady ? 1 : 0}`,
     "# HELP process_uptime_seconds Process uptime.",
     "# TYPE process_uptime_seconds gauge",
     `process_uptime_seconds ${process.uptime()}`,
