@@ -24,8 +24,8 @@ module.exports = {
       "SELECT id FROM loans WHERE loan_code = 'PL-DEMO-001' LIMIT 1",
     );
     const [[loan]] = existingLoans.length ? [existingLoans] : await queryInterface.sequelize.query(
-      `INSERT INTO loans (loan_code, contract_no, account_no, customer_id, branch_id, loan_product, loan_status, loan_amount, loan_amount_currency, currency, interest_rate, fee_percent, fee_amount, duration_month, grace_period_month, previous_loan_balance, created_user_id, start_date, created_at, updated_at)
-       VALUES ('PL-DEMO-001', 'CN-DEMO-001', '5000000001', :customerId, 1, 'personal', 'active', 3000000, 'MNT', 'MNT', 2.50, 1.00, 30000, 3, 0, 0, 1, '2026-07-01', :now, :now)
+      `INSERT INTO loans (loan_code, contract_no, account_no, customer_id, branch_id, loan_product, loan_status, loan_amount, loan_amount_currency, currency, interest_rate, fee_percent, fee_amount, duration_month, grace_period_month, previous_loan_balance, created_user_id, updated_user_id, start_date, created_at, updated_at)
+       VALUES ('PL-DEMO-001', 'CN-DEMO-001', '5000000001', :customerId, 1, 'personal', 'active', 3000000, 'MNT', 'MNT', 2.50, 1.00, 30000, 3, 0, 0, 1, 1, '2026-07-01', :now, :now)
        RETURNING id`,
       { replacements: { customerId: customer.id, now } },
     );
