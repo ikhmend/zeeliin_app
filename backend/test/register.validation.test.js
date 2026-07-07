@@ -10,7 +10,6 @@ const validBody = {
   birth_date: "1995-01-15",
   phone: "99112233",
   email: "DEMO.Customer@Example.com",
-  username: " DEMO ",
   pass: "DemoPass123",
   repass: "DemoPass123",
 };
@@ -22,7 +21,7 @@ test("registerSchema normalizes launch registration fields", () => {
   assert.equal(result.body.last_name, "Demo");
   assert.equal(result.body.register_no, "АА12345678");
   assert.equal(result.body.email, "demo.customer@example.com");
-  assert.equal(result.body.username, "demo");
+  assert.equal(result.body.username, undefined);
 });
 
 test("registerSchema rejects weak launch registration data", () => {

@@ -15,7 +15,7 @@ export const registerSchema = z.object({
         .regex(/^\d{4}-\d{2}-\d{2}$/, "Төрсөн огноо YYYY-MM-DD форматтай байна."),
       phone: z.string().trim().regex(/^\d{8}$/, "Утасны дугаар яг 8 оронтой байна."),
       email: z.string().trim().email("И-мэйл хаягийн формат буруу байна.").toLowerCase(),
-      username: z.string().trim().min(3, "Username хамгийн багадаа 3 тэмдэгт байна.").max(50).toLowerCase(),
+      username: z.string().trim().min(3, "Username хамгийн багадаа 3 тэмдэгт байна.").max(50).toLowerCase().optional(),
       pass: z.string().min(8, "Нууц үг 8-аас дээш тэмдэгттэй байх ёстой.").max(72),
       repass: z.string().min(1, "Нууц үгээ давтан оруулна уу."),
     })

@@ -44,7 +44,7 @@ export async function getMe(userId) {
 }
 export async function register(data){
     const {first_name, last_name, register_no, birth_date, phone, email, username, pass, repass}= data;
-    if(!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !email?.trim() || !username?.trim() || !pass?.trim() || !repass?.trim() || !register_no?.trim() || !birth_date){
+    if(!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !email?.trim() || !pass?.trim() || !repass?.trim() || !register_no?.trim() || !birth_date){
         throw new AppError("Талбарыг бүрэн бөглөнө үү", 400);
     }
     if (pass !== repass){
@@ -55,7 +55,7 @@ export async function register(data){
     }
     const imeel1= email.trim().toLowerCase();
     const utas1= phone.trim();
-    const ner1= username.trim().toLowerCase();
+    const ner1= (username || phone).trim().toLowerCase();
     const regno= register_no.trim().toUpperCase();
     const imeel= await authRepository.findUserByUnique({email: imeel1});
     if(utas1.length<8){
