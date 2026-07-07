@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, replace } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
@@ -61,7 +61,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={authenticated ? "/dashboard" : "/login"} replace />} />
+        <Route path="/" element={authStatus==="loading"? (<div className="auth-loading">Session шалгаж байна...</div>): authenticated? (<Navigate to= "/dashboard" replace/>) : (<Navigate to="/login" replace/>)}/>
         <Route path="/login" element={guestOnly(<Login onLogin={handleLogin} />)} />
         <Route path="/register" element={guestOnly(<Register />)} />
         <Route path="/forgot-password" element={guestOnly(<ForgotPassword />)} />
