@@ -58,6 +58,7 @@ module.exports = {
       interest_rate: { type: Sequelize.DECIMAL(5, 2), allowNull: false },
       fee_percent: Sequelize.DECIMAL(5, 2),
       fee_amount: Sequelize.DECIMAL(15, 2),
+      
       duration_month: { type: Sequelize.INTEGER, allowNull: false },
       grace_period_month: Sequelize.INTEGER,
       previous_loan_balance: Sequelize.DECIMAL(15, 2),

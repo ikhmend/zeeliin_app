@@ -7,7 +7,7 @@ module.exports = {
 
     const [[customer]] = await queryInterface.sequelize.query(
       `INSERT INTO customers (register_no, customer_type, customer_code, last_name, first_name, phone, email, birth_date, current_address, official_address, created_at, updated_at)
-       VALUES ('АА12345678', 'personal', 'CUST-DEMO-001', 'Demo', 'Customer', 99112233, 'demo.customer@example.com', '1995-01-15', 'Ulaanbaatar', 'Ulaanbaatar', :now, :now)
+       VALUES ('АА12345678', 'personal', 'CUST-DEMO-001', 'Demo', 'Customer', 99999999, 'demo.customer@example.com', '1995-01-15', 'Ulaanbaatar', 'Ulaanbaatar', :now, :now)
        ON CONFLICT (register_no) DO UPDATE SET updated_at = EXCLUDED.updated_at
        RETURNING id`,
       { replacements: { now } },
@@ -15,7 +15,7 @@ module.exports = {
 
     await queryInterface.sequelize.query(
       `INSERT INTO users (customer_id, username, full_name, email, phone, password_hash, role, is_active, created_at, updated_at)
-       VALUES (:customerId, 'demo', 'Demo Customer', 'demo.customer@example.com', '99112233', :passwordHash, 'customer', true, :now, :now)
+       VALUES (:customerId, 'demo', 'Demo Customer', 'demo.customer@example.com', '99999999', :passwordHash, 'customer', true, :now, :now)
        ON CONFLICT (username) DO UPDATE SET customer_id = EXCLUDED.customer_id, updated_at = EXCLUDED.updated_at`,
       { replacements: { customerId: customer.id, passwordHash, now } },
     );

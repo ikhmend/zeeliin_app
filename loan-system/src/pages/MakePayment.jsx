@@ -101,14 +101,14 @@ export default function MakePayment() {
 }
 
 const styles = {
-  container: { maxWidth: 760, margin: "0 auto", padding: "24px 16px" },
-  backButton: { marginBottom: 18, padding: 0, border: 0, background: "transparent", color: "#2563eb", cursor: "pointer", font: "inherit", textAlign: "left" },
+  container: { maxWidth: 760, margin: "0 auto", padding: "24px 16px", fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+  backButton: { marginBottom: 18, padding: 0, border: 0, background: "transparent", color: "#2563eb", cursor: "pointer", fontSize: 14, fontWeight: 600, textAlign: "left" },
   card: { display: "flex", flexDirection: "column", padding: 24, borderRadius: 8, background: "#fff", border: "1px solid #e2e8f0", boxShadow: "0 8px 30px rgba(15, 23, 42, 0.06)" },
-  title: { margin: "0 0 6px", fontSize: 26, color: "#0f172a" },
-  subText: { margin: "0 0 20px", color: "#64748b" },
-  balance: { display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 20, padding: 14, borderRadius: 8, background: "#eff6ff", color: "#1e3a8a" },
+  title: { margin: "0 0 6px", fontSize: 24, fontWeight: 600, color: "#0f172a" },
+  subText: { margin: "0 0 20px", color: "#64748b", fontSize: 14 },
+  balance: { display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 20, padding: 14, borderRadius: 8, background: "#eff6ff", color: "#1e3a8a", fontSize: 14 },
   label: { marginBottom: 8, color: "#334155", fontSize: 14, fontWeight: 600 },
-  input: { width: "100%", height: 46, marginBottom: 16, padding: "0 12px", border: "1px solid #cbd5e1", borderRadius: 8, font: "inherit" },
+  input: { width: "100%", height: 46, marginBottom: 16, padding: "0 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 15, fontFamily: "inherit" },
   notice: { marginBottom: 16, padding: 12, borderRadius: 8, background: "#f8fafc", color: "#475569", fontSize: 14 },
-  submit: { width: "100%", padding: "13px 16px", border: 0, borderRadius: 8, background: "#2563eb", color: "#fff", cursor: "pointer", font: "inherit", fontWeight: 700 },
+  submit: { width: "100%", padding: "13px 16px", border: 0, borderRadius: 8, background: "#2563eb", color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" },
 };
