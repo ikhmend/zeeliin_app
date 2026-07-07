@@ -235,8 +235,6 @@ function loadSavedSettings() {
         <div style={styles.sectionCard} className="section-card">
             <div style={styles.sectionHeader}>
             <div>
-                <h3 style={styles.sectionTitle}>Аюулгүй байдал</h3>
-
                 <button
                 type="button"
                 onClick={() => {

@@ -33,7 +33,7 @@ export default function MakePayment() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const paymentAmount = Number(amount);
-    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) return setError("Төлөх дүн 0-ээс их байна.");
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 20000) return setError("Төлөх дүн 20.000₮-с их байна.");
     if (paymentAmount > totalRemaining) return setError("Зээлийн нийт үлдэгдлээс их дүн төлөх боломжгүй.");
 
     try {
@@ -85,10 +85,11 @@ export default function MakePayment() {
         <select id="payment-method" value={method} onChange={(event) => setMethod(event.target.value)} style={styles.input}>
           <option value="bank_transfer">Банкны шилжүүлэг</option>
           <option value="cash">Бэлэн</option>
+          <option value="cash">QPay</option>
         </select>
 
         <div style={styles.notice}>
-          Placeholder маягаар.
+          Jinhene tulburiin gateway baihgui.
         </div>
 
         {error && <div className="auth-error-message">{error}</div>}

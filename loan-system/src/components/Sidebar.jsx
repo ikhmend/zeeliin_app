@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
             className={`app-sidebar ${isOpen ? "open" : ""}`}
         >
             <div style={styles.sidebarTop}>
-                <div style={styles.logo}>Loan-System</div>
+                <div style={styles.logo}>Loan-App</div>
 
                 <button
                     type="button"
