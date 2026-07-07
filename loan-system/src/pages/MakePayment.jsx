@@ -88,7 +88,7 @@ export default function MakePayment() {
         </select>
 
         <div style={styles.notice}>
-          Энэ нь gateway төлбөр биш, зөвхөн системд төлөлт бүртгэх үйлдэл.
+          Placeholder маягаар.
         </div>
 
         {error && <div className="auth-error-message">{error}</div>}
