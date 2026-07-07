@@ -6,7 +6,6 @@ dotenv.config({ quiet: true });
 export const limitRate= rateLimit({
     windowMs: 15*60*1000,
     limit: 5,
-    skipSuccessfulRequests:true,
     message:{
         success:false,
         error:"15 минутын дараагаар дахин оролдоно уу.",

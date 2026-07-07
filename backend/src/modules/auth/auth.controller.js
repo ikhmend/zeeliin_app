@@ -22,7 +22,7 @@ export const login= asyncHandler(async (req, res) => {
     return Success(res, {token: data.token, user:data.user}, 200, "Амжилттай нэвтэрлээ.");
 });
 export const register= asyncHandler(async (req, res) => {
-    const data= await authService.register(req.body);
+    const data= await authService.register(req.validated.body);
     return Success(res, data, 201, "Амжилттай бүртгэгдлээ")
 });
 export const changeMyPassword= asyncHandler(async (req, res) => {

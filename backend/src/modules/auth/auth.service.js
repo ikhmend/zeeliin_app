@@ -77,7 +77,7 @@ export async function register(data){
         throw new AppError("Бүртгэлтэй регистерийн дугаар байна.", 409)
     }
     const passHash= await bcrypt.hash(pass, 10);
-    const customerData= {first_name: first_name.trim(), last_name: last_name.trim(), register_no: register_no.trim().toLowerCase(), birth_date, phone: phone, email:imeel1,}
+    const customerData= {first_name: first_name.trim(), last_name: last_name.trim(), register_no: regno, birth_date, phone: phone, email:imeel1,}
     const userData= {full_name: `${last_name.trim()} ${first_name.trim()}`, username: ner1, email:imeel1 , phone:utas1, password_hash: passHash, role: "customer", is_active: true,}
     const res= await sequelize.transaction(async (transaction)=>{
         const customer= await customerRepository.createCustomer(customerData, transaction);

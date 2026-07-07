@@ -1,5 +1,5 @@
 import express from "express";
-import { loginSchema, passwordSchema, forgotPasswordSchema, resetPasswordSchema} from "./auth.validation.js";
+import { loginSchema, passwordSchema, forgotPasswordSchema, resetPasswordSchema, registerSchema} from "./auth.validation.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import * as authController from "./auth.controller.js";
 import { authMiddleware } from "./auth.middleware.js";
@@ -9,7 +9,7 @@ router.use((req, res, next) => {
     res.setHeader("Cache-Control", "no-store");
     next();
 });
-router.post("/register", regsiterLimit, authController.register);
+router.post("/register", regsiterLimit, validateRequest(registerSchema), authController.register);
 router.post("/login", limitRate, validateRequest(loginSchema), authController.login); 
 router.get("/personal", authMiddleware, authController.getMe); 
 router.patch("/password", passwordChangeLimit, authMiddleware, validateRequest(passwordSchema), authController.changeMyPassword);

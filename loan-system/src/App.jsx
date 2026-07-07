@@ -6,6 +6,7 @@ import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Loans from "./pages/Loans";
 import LoanDetail from "./pages/LoanDetail";
+import MakePayment from "./pages/MakePayment";
 import Payments from "./pages/Payments";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
@@ -44,7 +45,6 @@ export default function App() {
     try {
       await logoutApi();
     } catch {
-      // Local logout must still complete if the session is already unavailable.
     } finally {
       clearAccessToken();
       setAuthStatus("guest");
@@ -71,6 +71,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/loans" element={<Loans />} />
             <Route path="/loans/:loanId" element={<LoanDetail />} />
+            <Route path="/loans/:loanId/pay" element={<MakePayment />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings onLogout={handleLogout} />} />

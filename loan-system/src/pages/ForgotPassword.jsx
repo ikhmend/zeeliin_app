@@ -35,7 +35,7 @@ export default function ForgotPassword() {
           {message && <div className="auth-success-message">{message}</div>}
           {error && <div className="auth-error-message">{error}</div>}
           <button type="submit" style={styles.button} disabled={loading}>{loading ? "Илгээж байна..." : "Сэргээх холбоос авах"}</button>
-          <button type="button" style={styles.footerLink} onClick={() => navigate("/login")}>Нэвтрэх хэсэг рүү буцах</button>
+          <button type="button" style={{ ...styles.button, background: "#eef2ff", color: "#3b49df", fontFamily: "inherit", marginBottom: 0 }} onClick={() => navigate("/login")}>Нэвтрэх хэсэг рүү буцах</button>
         </form>
       </div>
     </div>

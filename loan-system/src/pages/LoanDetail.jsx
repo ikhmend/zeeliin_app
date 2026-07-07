@@ -1,25 +1,22 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
     getLoanDetail,
     getLoanInstallments,
-    makeLoanPayment,
 } from "../api/LoansApi";
-import PaymentFeedback from "../components/PaymentFeedback";
 
 const PAGE_SIZE = 5;
 
 export default function LoanDetail() {
     const { loanId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [loan, setLoan] = useState(null);
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [payingId, setPayingId] = useState(null); 
-    const [paymentFeedback, setPaymentFeedback] = useState(null);
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -126,92 +123,6 @@ export default function LoanDetail() {
         });
     };
 
-const handlePayInstallment = async (installment) => {
-
-    const remainingAmount = getInstallmentRemainingAmount(installment);
-
-    if (!remainingAmount || remainingAmount <= 0) {
-        setPaymentFeedback({ type: "error", title: "Төлөлт хийх боломжгүй", message: "Төлөх дүн олдсонгүй." });
-        return;
-    }
-
-    const method = window.prompt(
-        "Төлбөрийн арга сонгоно уу:\n1 - Банкны шилжүүлэг\n2 - QPay\n3 - Карт"
-        );
-
-    const paymentMethodMap = {
-
-        "1": "bank_transfer",
-        "2": "qpay",
-        "3": "card",
-        };
-
-    const paymentMethod = paymentMethodMap[String(method).trim()];
-
-    if (!paymentMethod) {
-        setPaymentFeedback({ type: "error", title: "Төлбөрийн арга буруу", message: "Банк, QPay эсвэл картын сонголтоос сонгоно уу." });
-        return;
-    }
-
-    const amountInput = window.prompt(
-    `Төлөх дүнгээ оруулна уу. Боломжит үлдэгдэл: ${formatMoney(
-        remainingAmount,
-        loan?.currency || "MNT"
-    )}`
-);
-
-        if (!amountInput) return;
-
-        const paymentAmount = Number(amountInput);
-
-        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
-            setPaymentFeedback({ type: "error", title: "Төлөх дүн буруу", message: "Төлөх дүн 0-ээс их тоо байна." });
-            return;
-        }
-
-        if (paymentAmount > remainingAmount) {
-            setPaymentFeedback({ type: "error", title: "Төлөх дүн хэтэрсэн", message: "Хуваарийн үлдэгдлээс их дүн төлөх боломжгүй." });
-            return;
-        }
-
-        const ok = window.confirm(
-            `${formatMoney(paymentAmount, loan?.currency || "MNT")} төлөх үү?`
-        );
-
-        if (!ok) return;
-
-    try {
-        setPayingId(installment.id);
-
-        await makeLoanPayment(loanId, {
-        payment_amount: paymentAmount,
-        payment_method: paymentMethod,
-        note: `Customer web payment. Installment ID: ${installment.id}`
-        });
-
-        const [loanData, installmentData] = await Promise.all([
-        getLoanDetail(loanId),
-        getLoanInstallments(loanId),
-        ]);
-
-        setLoan(loanData);
-        setInstallments(installmentData || []);
-        const methodNames = { bank_transfer: "Банкны шилжүүлэг", qpay: "QPay", card: "Карт" };
-        setPaymentFeedback({
-            type: "success",
-            title: "Төлөлт амжилттай",
-            message: "Таны төлөлт бүртгэгдлээ.",
-            details: [
-                { label: "Дүн", value: formatMoney(paymentAmount, loan?.currency || "MNT") },
-                { label: "Арга", value: methodNames[paymentMethod] },
-            ],
-        });
-    } catch (err) {
-        setPaymentFeedback({ type: "error", title: "Төлөлт амжилтгүй", message: err.response?.data?.message || "Төлбөр хийх үед алдаа гарлаа." });
-    } finally {
-        setPayingId(null);
-    }
-};
 const totalPages = Math.max(
     1,
     Math.ceil(installments.length / PAGE_SIZE)
@@ -255,6 +166,12 @@ const handleNextPage = () => {
         loadLoanDetail();
     }, [loanId]);
 
+    useEffect(() => {
+        if (!loading && location.hash === "#payment-schedule") {
+            document.getElementById("payment-schedule")?.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [loading, location.hash]);
+
     if (loading) return <p style={styles.message}>Уншиж байна...</p>;
     if (error) return <p style={styles.message}>{error}</p>;
     if (!loan) return <p style={styles.message}>Зээлийн мэдээлэл олдсонгүй.</p>;
@@ -270,7 +187,6 @@ const handleNextPage = () => {
 
     return (
         <div style={styles.container}>
-            <PaymentFeedback feedback={paymentFeedback} onClose={() => setPaymentFeedback(null)} />
             <button style={styles.backButton} onClick={() => navigate("/loans")}>
                 Буцах
             </button>
@@ -326,7 +242,7 @@ const handleNextPage = () => {
                 </div>
             </div>
 
-            <div style={styles.section}>
+            <div id="payment-schedule" style={styles.section}>
                 <div style={styles.scheduleHeader}>
                     <div>
                         <h3 style={styles.boxTitle}>Төлөлтийн хуваарь</h3>
@@ -378,10 +294,9 @@ const handleNextPage = () => {
                                                 ) : canPay ? (
                                                     <button
                                                         style={styles.payButton}
-                                                        onClick={() => handlePayInstallment(item)}
-                                                        disabled={payingId === item.id}
+                                                        onClick={() => navigate(`/loans/${loanId}/pay`)}
                                                     >
-                                                        {payingId === item.id ? "Төлж байна..." : isPartial ? "Үлдэгдэл" : "Төлөх"}
+                                                        {isPartial ? "Үлдэгдэл" : "Төлөх"}
                                                     </button>
                                                 ) : (
                                                     

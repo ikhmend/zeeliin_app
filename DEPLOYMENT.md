@@ -10,6 +10,17 @@ Copy `backend/.env.example` and `loan-system/.env.example` into the deployment s
 
 Set `TRUST_PROXY_HOPS` to the exact number of trusted proxies between the client and Express. Use `1` for a single Nginx/load-balancer proxy. Set `COOKIE_SECURE=true` under HTTPS. Prefer serving the frontend and `/api` from the same site; otherwise configure `CORS_ORIGIN` and `COOKIE_SAME_SITE` explicitly.
 
+## Database
+
+From `backend/`, run:
+
+```sh
+npm run db:migrate
+npm run db:seed
+```
+
+The seed creates demo login `demo` / `DemoPass123` with one personal loan and three installments.
+
 ## Probes and monitoring
 
 - `GET /health`: process liveness; does not query dependencies.

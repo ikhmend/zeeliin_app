@@ -1,4 +1,32 @@
 import {z} from "zod";
+export const registerSchema = z.object({
+  body: z
+    .object({
+      first_name: z.string().trim().min(1, "Нэр оруулна уу.").max(100),
+      last_name: z.string().trim().min(1, "Овог оруулна уу.").max(100),
+      register_no: z
+        .string()
+        .trim()
+        .toUpperCase()
+        .regex(/^[А-ЯӨҮЁA-Z]{2}\d{8}$/, "Регистрийн дугаарын формат буруу байна."),
+      birth_date: z
+        .string()
+        .trim()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Төрсөн огноо YYYY-MM-DD форматтай байна."),
+      phone: z.string().trim().regex(/^\d{8}$/, "Утасны дугаар яг 8 оронтой байна."),
+      email: z.string().trim().email("И-мэйл хаягийн формат буруу байна.").toLowerCase(),
+      username: z.string().trim().min(3, "Username хамгийн багадаа 3 тэмдэгт байна.").max(50).toLowerCase(),
+      pass: z.string().min(8, "Нууц үг 8-аас дээш тэмдэгттэй байх ёстой.").max(72),
+      repass: z.string().min(1, "Нууц үгээ давтан оруулна уу."),
+    })
+    .strict()
+    .refine((data) => data.pass === data.repass, {
+      message: "Нууц үг таарахгүй байна",
+      path: ["repass"],
+    }),
+  params: z.object({}).optional().default({}),
+  query: z.object({}).optional().default({}),
+});
 export const loginSchema= z.object({
     body: z.object({
         login: z.string({
