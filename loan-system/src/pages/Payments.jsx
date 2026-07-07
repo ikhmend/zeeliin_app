@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyPayments } from "../api/LoansApi";
+import StateMessage from "../components/StateMessage";
 
 const PAGE_SIZE = 5;
 export default function Payments() {
@@ -158,11 +159,11 @@ export default function Payments() {
     }, 0);
 
     if (loading) {
-        return <p style={styles.message}>Уншиж байна...</p>;
+        return <StateMessage type="loading" title="Уншиж байна" message="Төлөлтийн түүхийг ачаалж байна." />;
     }
 
     if (error) {
-        return <p style={styles.message}>{error}</p>;
+        return <StateMessage type="error" title="Алдаа гарлаа" message={error} />;
     }
 
     return (
@@ -193,9 +194,7 @@ export default function Payments() {
                 </div>
 
                 {payments.length === 0 ? (
-                    <p style={styles.emptyText}>
-                        Төлбөрийн түүх байхгүй байна.
-                    </p>
+                    <StateMessage title="Төлөлтийн түүх байхгүй" message="Одоогоор бүртгэгдсэн төлөлт алга." />
                 ) : (
                     <>
                         <div style={styles.table} className="responsive-table">

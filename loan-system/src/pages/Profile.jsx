@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyProfile, updateMyProfile } from "../api/ProfileApi";
+import StateMessage from "../components/StateMessage";
 
 function profileToForm(data) {
     const acc = data?.account || {};
@@ -150,15 +151,15 @@ export default function Profile() {
     };
 
     if (loading) {
-        return <p style={styles.message}>Уншиж байна...</p>;
+        return <StateMessage type="loading" title="Уншиж байна" message="Профайл мэдээллийг ачаалж байна." />;
     }
 
     if (error && !profileData) {
-        return <p style={styles.message}>{error}</p>;
+        return <StateMessage type="error" title="Алдаа гарлаа" message={error} />;
     }
 
     if (!profileData) {
-        return <p style={styles.message}>Профайл мэдээлэл олдсонгүй.</p>;
+        return <StateMessage title="Профайл олдсонгүй" message="Таны профайл мэдээлэл одоогоор байхгүй байна." />;
     }
 
     return (

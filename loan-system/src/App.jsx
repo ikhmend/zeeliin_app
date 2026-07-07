@@ -45,6 +45,7 @@ export default function App() {
     try {
       await logoutApi();
     } catch {
+      // Logout still clears local session if the server session is already gone.
     } finally {
       clearAccessToken();
       setAuthStatus("guest");

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyLoans } from "../api/LoansApi";
 import { useNavigate } from "react-router-dom";
+import StateMessage from "../components/StateMessage";
 
 export default function Loans() {
     const [loans, setLoans] = useState([]);
@@ -47,18 +48,16 @@ export default function Loans() {
     }, []);
 
     if (loading) {
-        return <p style={styles.message}>Уншиж байна...</p>;
+        return <StateMessage type="loading" title="Уншиж байна" message="Зээлийн жагсаалтыг ачаалж байна." />;
     }
-    if (error) return <p style={styles.message}>{error}</p>;
+    if (error) return <StateMessage type="error" title="Алдаа гарлаа" message={error} />;
 
     return (
         <div style={styles.container} className="page-container">
             <h1 style={styles.title}>Миний зээлүүд</h1>
 
             {loans.length === 0 ? (
-                <div style={styles.emptyBox} className="responsive-card">
-                    <p>Таны нэр дээр зээл бүртгэгдээгүй байна.</p>
-                </div>
+                <StateMessage title="Зээл бүртгэгдээгүй байна" message="Одоогоор таны нэр дээр идэвхтэй хувийн зээл алга." />
             ) : (
                 <div style={styles.list}>
                     {loans.map((loan) => (

@@ -49,29 +49,32 @@ export default function Login({ onLogin }) {
             <div style={styles.left} className="auth-left">
                 <div style={styles.tagRow}>
                     <div style={styles.tagIcon}>LC</div>
-                    <div style={styles.tag}>SMART FINANCING</div>
+                <div style={styles.tag}>ХУВИЙН ЗЭЭЛИЙН СИСТЕМ</div>
                 </div>
 
-                <h1 style={styles.title}>Your smart financial solution</h1>
+                <h1 style={styles.title}>Зээлийн мэдээллээ нэг дороос хянах</h1>
 
                 <p style={styles.desc}>
-                    From personal loans to business needs
+                    Өөрийн хувийн зээл, төлөлтийн хуваарь, профайл мэдээллээ шалгана уу.
                 </p>
             </div>
             <div style={styles.right} className="auth-right">
                 <div style={styles.card} className="auth-card">
                     <div style={styles.logoRow}>
-                        <span style={styles.logoIcon}>LC</span> Loan Corp
+                        <span style={styles.logoIcon}>LC</span> Зээлийн систем
                     </div>
 
-                    <h2 style={styles.formTitle}>Login</h2>
+                    <h2 style={styles.formTitle}>Нэвтрэх</h2>
+                    {location.state?.registered && (
+                        <div className="auth-success-message">Бүртгэл амжилттай үүслээ. Утас эсвэл и-мэйлээрээ нэвтэрнэ үү.</div>
+                    )}
                     {location.state?.passwordReset && (
                         <div className="auth-success-message">Нууц үг шинэчлэгдлээ. Шинэ нууц үгээрээ нэвтэрнэ үү.</div>
                     )}
                     <div style={{ ...styles.inputWrapper, marginBottom: "20px" }}>
                         <FiUser style={styles.inputIcon} />
                         <input
-                            placeholder="Username"
+                            placeholder="Утас, и-мэйл эсвэл нэвтрэх нэр"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             style={{ ...styles.cleanInput, fontSize: styles.input.fontSize || "15px", padding: "16px 40px" }}
@@ -81,7 +84,7 @@ export default function Login({ onLogin }) {
                         <FiLock style={styles.inputIcon} />
                         <input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Password"
+                            placeholder="Нууц үг"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             style={{ ...styles.cleanInput, fontSize: styles.input.fontSize || "15px", padding: "16px 40px" }}
@@ -104,7 +107,7 @@ export default function Login({ onLogin }) {
                         style={{ ...styles.button, ...styles.blueButton, margin: "12px 0 24px 0" }}
                         disabled={loading}
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
                     </button>
 
                     <p style={styles.footer}>

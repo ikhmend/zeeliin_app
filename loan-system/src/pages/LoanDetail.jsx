@@ -4,6 +4,7 @@ import {
     getLoanDetail,
     getLoanInstallments,
 } from "../api/LoansApi";
+import StateMessage from "../components/StateMessage";
 
 const PAGE_SIZE = 5;
 
@@ -172,9 +173,9 @@ const handleNextPage = () => {
         }
     }, [loading, location.hash]);
 
-    if (loading) return <p style={styles.message}>Уншиж байна...</p>;
-    if (error) return <p style={styles.message}>{error}</p>;
-    if (!loan) return <p style={styles.message}>Зээлийн мэдээлэл олдсонгүй.</p>;
+    if (loading) return <StateMessage type="loading" title="Уншиж байна" message="Зээлийн дэлгэрэнгүй мэдээллийг ачаалж байна." />;
+    if (error) return <StateMessage type="error" title="Алдаа гарлаа" message={error} />;
+    if (!loan) return <StateMessage title="Зээл олдсонгүй" message="Сонгосон зээлийн мэдээлэл байхгүй байна." />;
 
     const currency = getLoanValue("currency", "currency_code", "currencyCode") || "MNT";
     const loanProduct = getLoanValue("loan_product", "loanProduct", "loan_type", "product");

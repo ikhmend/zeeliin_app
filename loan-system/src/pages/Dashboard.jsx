@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import getDashboardData from "../api/DashboardApi";
+import StateMessage from "../components/StateMessage";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -49,15 +50,15 @@ export default function Dashboard() {
     }, []);
 
     if (loading) {
-        return <p style={styles.loadingText}>Уншиж байна...</p>;
+        return <StateMessage type="loading" title="Уншиж байна" message="Dashboard мэдээллийг ачаалж байна." />;
     }
 
     if (error) {
-        return <p style={styles.loadingText}>{error}</p>;
+        return <StateMessage type="error" title="Алдаа гарлаа" message={error} />;
     }
 
     if (!data) {
-        return <p style={styles.loadingText}>Мэдээлэл олдсонгүй.</p>;
+        return <StateMessage title="Мэдээлэл олдсонгүй" message="Таны dashboard мэдээлэл одоогоор байхгүй байна." />;
     }
 
     const { customer, loan, schedule = [], recentPayments = [] } = data;

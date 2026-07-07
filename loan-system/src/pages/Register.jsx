@@ -1,129 +1,150 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "../styles/loginStyles"; 
+import styles from "../styles/loginStyles";
 import { registerUser } from "../services/authService";
 
-export default function Register() {
-    
-    const [lastName, setLastName] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [registerNo, setRegisterNo] = useState("");
-    const [birthDate, setBirthDate] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
-    const [username, setUsername] = useState("");
-    const [pass, setPass] = useState("");
-    const [repass, setRepass] = useState("");
-    
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+const initialForm = {
+  last_name: "",
+  first_name: "",
+  register_no: "",
+  birth_date: "",
+  phone: "",
+  email: "",
+  pass: "",
+  repass: "",
+};
 
-    const navigate = useNavigate();
+const fieldLabels = {
+  last_name: "Овог",
+  first_name: "Нэр",
+  register_no: "Регистрийн дугаар",
+  birth_date: "Төрсөн огноо",
+  phone: "Утасны дугаар",
+  email: "И-мэйл",
+  pass: "Нууц үг",
+  repass: "Нууц үг давтах",
+};
 
-    const handleRegister = async () => {
-        setError("");
+const fields = [
+  ["last_name", "Овог", "text", "Бат"],
+  ["first_name", "Нэр", "text", "Дорж"],
+  ["register_no", "Регистрийн дугаар", "text", "АА12345678"],
+  ["birth_date", "Төрсөн огноо", "date", ""],
+  ["phone", "Утасны дугаар", "tel", "99112233"],
+  ["email", "И-мэйл", "email", "name@example.com"],
+  ["pass", "Нууц үг", "password", "8-аас дээш тэмдэгт"],
+  ["repass", "Нууц үг давтах", "password", ""],
+];
 
-        // Бүх талбарыг шалгах
-        if (!lastName || !firstName || !registerNo || !birthDate || !phone || !email || !username || !pass || !repass) {
-            setError("Талбарыг бүрэн бөглөнө үү");
-            return;
-        }
-
-        if (pass !== repass) {
-            setError("Нууц үг таарахгүй байна");
-            return;
-        }
-
-        if (pass.length < 8) {
-            setError("Нууц үг 8-аас дээш тэмдэгттэй байх ёстой.");
-            return;
-        }
-
-        try {
-            setLoading(true);
-
-            // Бэкэнд рүү хэрэглэгчийн оруулсан бодит мэдээллийг дамжуулна
-            const registerData = {
-                last_name: lastName.trim(),
-                first_name: firstName.trim(),
-                register_no: registerNo.trim().toUpperCase(), // Регистрийг ТОМ үсгээр явуулна
-                birth_date: birthDate,
-                phone: phone.trim(),
-                email: email.trim().toLowerCase(),
-                username: username.trim().toLowerCase(),
-                pass: pass,
-                repass: repass
-            };
-
-            await registerUser(registerData);
-
-            alert("Амжилттай бүртгэгдлээ. Та нэвтрэн орно уу.");
-            navigate("/login");
-        } catch (err) {
-            // Бэкэндээс ирэх AppError-ийн алдааны мессежийг шууд харуулна
-            setError(
-                err.response?.data?.message ||
-                err.response?.data?.error ||
-                "Бүртгүүлэхэд алдаа гарлаа"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div style={styles.wrapper} className="auth-wrapper">
-            <div style={styles.left} className="auth-left">
-                <div style={styles.tagRow}>
-                    <div style={styles.tagIcon}>LC</div>
-                    <div style={styles.tag}>SMART FINANCING</div>
-                </div>
-                <h1 style={styles.title}>Your smart financial solution</h1>
-                <p style={styles.desc}>From personal loans to business needs</p>
-            </div>
-
-            {/* Олон талбартай болсон тул स्क्रोल хийж бодохоор style нэмэв */}
-            <div style={{ ...styles.right, overflowY: "auto", padding: "40px 20px" }} className="auth-right">
-                <div style={styles.card} className="auth-card">
-                    <div style={styles.logoRow}>
-                        <span style={styles.logoIcon}>LC</span> Loan Corp
-                    </div>
-
-                    <h2 style={styles.formTitle}>Sign Up</h2>
-
-                    <input placeholder="Овог (Last Name)" value={lastName} onChange={(e) => setLastName(e.target.value)} style={styles.input} />
-                    <input placeholder="Нэр (First Name)" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={styles.input} />
-                    <input placeholder="Регистрийн дугаар (жишээ нь: АА12345678)" value={registerNo} onChange={(e) => setRegisterNo(e.target.value)} style={styles.input} />
-                    
-                    <div style={{ display: "flex", flexDirection: "column", alignSelf: "stretch", marginBottom: "12px" }}>
-                        <label style={{ fontSize: "14px", color: "#475569", marginBottom: "4px", textAlign: "left", paddingLeft: "4px" }}>Төрсөн огноо</label>
-                        <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} style={styles.input} />
-                    </div>
-                    
-                    <input placeholder="Утасны дугаар" value={phone} onChange={(e) => setPhone(e.target.value)} style={styles.input} />
-                    <input type="email" placeholder="И-мэйл хаяг" value={email} onChange={(e) => setEmail(e.target.value)} style={styles.input} />
-                    <input placeholder="Нэвтрэх нэр (Username)" value={username} onChange={(e) => setUsername(e.target.value)} style={styles.input} />
-                    <input type="password" placeholder="Нууц үг" value={pass} onChange={(e) => setPass(e.target.value)} style={styles.input} />
-                    <input type="password" placeholder="Нууц үг давтах" value={repass} onChange={(e) => setRepass(e.target.value)} style={styles.input} />
-
-                    {error && (
-                        <div style={{ color: "red", marginBottom: "12px", fontSize: "14px", textAlign: "left", width: "100%" }}>
-                            {error}
-                        </div>
-                    )}
-
-                    <button onClick={handleRegister} style={styles.button} disabled={loading}>
-                        {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
-                    </button>
-
-                    <p style={styles.footer}>
-                        Бүртгэлтэй юу?{" "}
-                        <span style={styles.footerLink} onClick={() => navigate("/login")}>
-                            Нэвтрэх
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
+function validate(form) {
+  const errors = {};
+  for (const [name] of fields) {
+    if (!form[name].trim()) errors[name] = `${fieldLabels[name]} оруулна уу.`;
+  }
+  if (form.register_no && !/^[А-ЯӨҮЁA-Z]{2}\d{8}$/.test(form.register_no.trim().toUpperCase())) {
+    errors.register_no = "Жишээ: АА12345678";
+  }
+  if (form.phone && !/^\d{8}$/.test(form.phone.trim())) errors.phone = "Утасны дугаар 8 оронтой байна.";
+  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "И-мэйл формат буруу байна.";
+  if (form.pass && form.pass.length < 8) errors.pass = "Нууц үг 8-аас дээш тэмдэгттэй байна.";
+  if (form.pass && form.repass && form.pass !== form.repass) errors.repass = "Нууц үг таарахгүй байна.";
+  return errors;
 }
+
+export default function Register() {
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const setField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+    setGeneralError("");
+
+    const nextErrors = validate(form);
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await registerUser({
+        last_name: form.last_name.trim(),
+        first_name: form.first_name.trim(),
+        register_no: form.register_no.trim().toUpperCase(),
+        birth_date: form.birth_date,
+        phone: form.phone.trim(),
+        email: form.email.trim().toLowerCase(),
+        pass: form.pass,
+        repass: form.repass,
+      });
+      navigate("/login", { state: { registered: true } });
+    } catch (err) {
+      const field = err.response?.data?.field?.replace("body.", "");
+      const message = err.response?.data?.message || err.response?.data?.error || "Бүртгүүлэхэд алдаа гарлаа.";
+      if (field && fieldLabels[field]) setErrors((prev) => ({ ...prev, [field]: message }));
+      else setGeneralError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={styles.wrapper} className="auth-wrapper">
+      <div style={styles.left} className="auth-left">
+        <div style={styles.tagRow}>
+          <div style={styles.tagIcon}>LC</div>
+          <div style={styles.tag}>ХУВИЙН ЗЭЭЛИЙН СИСТЕМ</div>
+        </div>
+        <h1 style={styles.title}>Зээлийн мэдээллээ нэг дороос хянах</h1>
+        <p style={styles.desc}>Бүртгүүлээд өөрийн хувийн зээл, төлөлтийн хуваарь, профайл мэдээллээ шалгана уу.</p>
+      </div>
+
+      <div style={{ ...styles.right, overflowY: "auto", padding: "32px 20px" }} className="auth-right">
+        <form style={styles.card} className="auth-card" onSubmit={handleRegister} noValidate>
+          <div style={styles.logoRow}>
+            <span style={styles.logoIcon}>LC</span> Зээлийн систем
+          </div>
+          <h2 style={styles.formTitle}>Бүртгүүлэх</h2>
+          {generalError && <div className="auth-error-message">{generalError}</div>}
+
+          {fields.map(([name, label, type, placeholder]) => (
+            <div key={name} style={fieldWrap}>
+              <label htmlFor={name} style={labelStyle}>{label}</label>
+              <input
+                id={name}
+                name={name}
+                type={type}
+                value={form[name]}
+                placeholder={placeholder}
+                onChange={(event) => setField(name, event.target.value)}
+                style={{ ...styles.input, marginBottom: 0, borderColor: errors[name] ? "#ef4444" : "#e2e8f0" }}
+              />
+              {errors[name] && <div style={errorStyle}>{errors[name]}</div>}
+            </div>
+          ))}
+
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
+          </button>
+
+          <p style={styles.footer}>
+            Бүртгэлтэй юу?
+            <span style={styles.footerLink} onClick={() => navigate("/login")}>Нэвтрэх</span>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+const fieldWrap = { width: "100%", marginBottom: "14px" };
+const labelStyle = { display: "block", marginBottom: "6px", fontSize: "13px", color: "#475569", fontWeight: 600 };
+const errorStyle = { marginTop: "5px", color: "#b91c1c", fontSize: "13px" };
