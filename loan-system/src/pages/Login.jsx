@@ -66,7 +66,9 @@ export default function Login({ onLogin }) {
 
                     <h2 style={styles.formTitle}>Нэвтрэх</h2>
                     {location.state?.registered && (
-                        <div className="auth-success-message">Бүртгэл амжилттай үүслээ. Утас эсвэл и-мэйлээрээ нэвтэрнэ үү.</div>
+                        <div className="auth-success-message">
+                            Бүртгэл үүслээ. {location.state.email || "И-мэйл"} хаягаар очсон холбоосоор нууц үгээ үүсгэнэ үү.
+                        </div>
                     )}
                     {location.state?.passwordReset && (
                         <div className="auth-success-message">Нууц үг шинэчлэгдлээ. Шинэ нууц үгээрээ нэвтэрнэ үү.</div>

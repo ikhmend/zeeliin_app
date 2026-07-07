@@ -10,8 +10,6 @@ const validBody = {
   birth_date: "1995-01-15",
   phone: "99112233",
   email: "DEMO.Customer@Example.com",
-  pass: "DemoPass123",
-  repass: "DemoPass123",
 };
 
 test("registerSchema normalizes launch registration fields", () => {
@@ -26,7 +24,7 @@ test("registerSchema normalizes launch registration fields", () => {
 
 test("registerSchema rejects weak launch registration data", () => {
   const result = registerSchema.safeParse({
-    body: { ...validBody, phone: "123", repass: "wrong" },
+    body: { ...validBody, phone: "123" },
     params: {},
     query: {},
   });

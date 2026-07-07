@@ -10,8 +10,6 @@ const initialForm = {
   birth_date: "",
   phone: "",
   email: "",
-  pass: "",
-  repass: "",
 };
 
 const fieldLabels = {
@@ -21,19 +19,15 @@ const fieldLabels = {
   birth_date: "Төрсөн огноо",
   phone: "Утасны дугаар",
   email: "И-мэйл",
-  pass: "Нууц үг",
-  repass: "Нууц үг давтах",
 };
 
 const fields = [
-  ["last_name", "Овог", "text", "Бат"],
-  ["first_name", "Нэр", "text", "Дорж"],
-  ["register_no", "Регистрийн дугаар", "text", "АА12345678"],
-  ["birth_date", "Төрсөн огноо", "date", ""],
-  ["phone", "Утасны дугаар", "tel", "99112233"],
-  ["email", "И-мэйл", "email", "name@example.com"],
-  ["pass", "Нууц үг", "password", "8-аас дээш тэмдэгт"],
-  ["repass", "Нууц үг давтах", "password", ""],
+  ["last_name", "Овог", "text", "Бат", "half"],
+  ["first_name", "Нэр", "text", "Дорж", "half"],
+  ["register_no", "Регистрийн дугаар", "text", "АА12345678", "half"],
+  ["birth_date", "Төрсөн огноо", "date", "", "half"],
+  ["phone", "Утасны дугаар", "tel", "99112233", "half"],
+  ["email", "И-мэйл", "email", "name@example.com", "half"],
 ];
 
 function validate(form) {
@@ -46,8 +40,6 @@ function validate(form) {
   }
   if (form.phone && !/^\d{8}$/.test(form.phone.trim())) errors.phone = "Утасны дугаар 8 оронтой байна.";
   if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "И-мэйл формат буруу байна.";
-  if (form.pass && form.pass.length < 8) errors.pass = "Нууц үг 8-аас дээш тэмдэгттэй байна.";
-  if (form.pass && form.repass && form.pass !== form.repass) errors.repass = "Нууц үг таарахгүй байна.";
   return errors;
 }
 
@@ -82,10 +74,8 @@ export default function Register() {
         birth_date: form.birth_date,
         phone: form.phone.trim(),
         email: form.email.trim().toLowerCase(),
-        pass: form.pass,
-        repass: form.repass,
       });
-      navigate("/login", { state: { registered: true } });
+      navigate("/login", { state: { registered: true, email: form.email.trim().toLowerCase() } });
     } catch (err) {
       const field = err.response?.data?.field?.replace("body.", "");
       const message = err.response?.data?.message || err.response?.data?.error || "Бүртгүүлэхэд алдаа гарлаа.";
@@ -97,26 +87,19 @@ export default function Register() {
   };
 
   return (
-    <div style={styles.wrapper} className="auth-wrapper">
-      <div style={styles.left} className="auth-left">
-        <div style={styles.tagRow}>
-          <div style={styles.tagIcon}>LC</div>
-          <div style={styles.tag}>ХУВИЙН ЗЭЭЛИЙН СИСТЕМ</div>
-        </div>
-        <h1 style={styles.title}>Зээлийн мэдээллээ нэг дороос хянах</h1>
-        <p style={styles.desc}>Бүртгүүлээд өөрийн хувийн зээл, төлөлтийн хуваарь, профайл мэдээллээ шалгана уу.</p>
-      </div>
-
-      <div style={{ ...styles.right, overflowY: "auto", padding: "32px 20px" }} className="auth-right">
-        <form style={styles.card} className="auth-card" onSubmit={handleRegister} noValidate>
+    <div style={registerPage} className="auth-wrapper">
+      <div style={registerShell} className="auth-card">
+        <form style={registerCard} onSubmit={handleRegister} noValidate>
           <div style={styles.logoRow}>
             <span style={styles.logoIcon}>LC</span> Зээлийн систем
           </div>
           <h2 style={styles.formTitle}>Бүртгүүлэх</h2>
+          <p style={hintStyle}>Мэдээллээ оруулсны дараа и-мэйлээр нууц үг үүсгэх холбоос очно.</p>
           {generalError && <div className="auth-error-message">{generalError}</div>}
 
-          {fields.map(([name, label, type, placeholder]) => (
-            <div key={name} style={fieldWrap}>
+          <div style={fieldGrid} className="register-field-grid">
+            {fields.map(([name, label, type, placeholder, size]) => (
+            <div key={name} style={size === "half" ? fieldHalf : fieldWrap}>
               <label htmlFor={name} style={labelStyle}>{label}</label>
               <input
                 id={name}
@@ -130,6 +113,7 @@ export default function Register() {
               {errors[name] && <div style={errorStyle}>{errors[name]}</div>}
             </div>
           ))}
+          </div>
 
           <button type="submit" style={styles.button} disabled={loading}>
             {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
@@ -145,6 +129,28 @@ export default function Register() {
   );
 }
 
+const registerPage = {
+  width: "100%",
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "32px 16px",
+  background: "#f8fafc",
+  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+};
+const registerShell = { width: "100%", maxWidth: "760px" };
+const registerCard = {
+  width: "100%",
+  padding: "28px",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "8px",
+  boxShadow: "0 8px 30px rgba(15, 23, 42, 0.06)",
+};
+const hintStyle = { margin: "-20px 0 22px", color: "#64748b", fontSize: "14px", lineHeight: 1.5 };
+const fieldGrid = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", columnGap: "14px" };
 const fieldWrap = { width: "100%", marginBottom: "14px" };
+const fieldHalf = { ...fieldWrap, minWidth: 0 };
 const labelStyle = { display: "block", marginBottom: "6px", fontSize: "13px", color: "#475569", fontWeight: 600 };
 const errorStyle = { marginTop: "5px", color: "#b91c1c", fontSize: "13px" };

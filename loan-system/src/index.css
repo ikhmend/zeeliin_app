@@ -401,3 +401,9 @@ code {
 .state-message-loading {
   background: #f8fafc;
 }
+
+@media (max-width: 640px) {
+  .register-field-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

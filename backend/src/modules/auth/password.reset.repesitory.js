@@ -1,7 +1,7 @@
 import PasswordReset from "../../models/password.reset.model.js";
 import { Op } from "sequelize";
-export async function createPassReset(userId, tokenHash, expiresAt){
-    return await PasswordReset.create({user_id:userId, token_hash: tokenHash, expires_at:expiresAt });
+export async function createPassReset(userId, tokenHash, expiresAt, transaction = null){
+    return await PasswordReset.create({user_id:userId, token_hash: tokenHash, expires_at:expiresAt }, { transaction });
 }
 export async function findValidPasswordReset(tokenHash) {
   return await PasswordReset.findOne({

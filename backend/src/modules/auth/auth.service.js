@@ -6,7 +6,7 @@ import sequelize from "../../config/sequelize.js";
 import AppError from "../../utility/AppError.js";
 import crypto from "crypto";
 import * as passRepository from "./password.reset.repesitory.js";
-import { sendPasswordResetEmail } from "../../utility/email.service.js";
+import { sendPasswordResetEmail, sendPasswordSetupEmail } from "../../utility/email.service.js";
 export async function login(loginData) {
     const {login, password} = loginData;
     // if (!login?.trim() || !password?.trim()){
@@ -43,15 +43,9 @@ export async function getMe(userId) {
     return {id: user.id, customer_id: user.customer_id, username: user.username, full_name: user.full_name, email: user.email,phone: user.phone, role: user.role, is_active: user.is_active,};
 }
 export async function register(data){
-    const {first_name, last_name, register_no, birth_date, phone, email, username, pass, repass}= data;
-    if(!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !email?.trim() || !pass?.trim() || !repass?.trim() || !register_no?.trim() || !birth_date){
+    const {first_name, last_name, register_no, birth_date, phone, email, username}= data;
+    if(!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !email?.trim() || !register_no?.trim() || !birth_date){
         throw new AppError("Талбарыг бүрэн бөглөнө үү", 400);
-    }
-    if (pass !== repass){
-        throw new AppError("Нууц үг таарахгүй байна", 400);
-    }
-    if (pass.length<8){
-        throw new AppError("Нууц үг 8-аас дээш тэмдэгттэй байх ёстой.", 400)
     }
     const imeel1= email.trim().toLowerCase();
     const utas1= phone.trim();
@@ -76,14 +70,18 @@ export async function register(data){
     if(dugaar){
         throw new AppError("Бүртгэлтэй регистерийн дугаар байна.", 409)
     }
-    const passHash= await bcrypt.hash(pass, 10);
+    const setupToken = crypto.randomBytes(32).toString("hex");
+    const setupTokenHash = crypto.createHash("sha256").update(setupToken).digest("hex");
+    const passHash= await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
     const customerData= {first_name: first_name.trim(), last_name: last_name.trim(), register_no: regno, birth_date, phone: phone, email:imeel1,}
     const userData= {full_name: `${last_name.trim()} ${first_name.trim()}`, username: ner1, email:imeel1 , phone:utas1, password_hash: passHash, role: "customer", is_active: true,}
     const res= await sequelize.transaction(async (transaction)=>{
         const customer= await customerRepository.createCustomer(customerData, transaction);
         const user= await authRepository.createUser({...userData, customer_id: customer.id}, transaction);
+        await passRepository.createPassReset(user.id, setupTokenHash, new Date(Date.now() + 24 * 60 * 60 * 1000), transaction);
         return {customer, user, }
     });
+    await sendPasswordSetupEmail(imeel1, `${process.env.FRONTEND_URL}/reset-password?token=${setupToken}&mode=setup`);
     return {customer: {id: res.customer.id, first_name: res.customer.first_name, last_name: res.customer.last_name, register_no: res.customer.register_no, birth_date: res.customer.birth_date, phone: res.customer.phone, email: res.customer.email,}, user:{id: res.user.id, customer_id: res.user.customer_id, username: res.user.username, full_name: res.user.full_name, email:res.user.email, phone:res.user.phone, role:res.user.role, is_active: res.user.is_active, }};
 }
 export async function changeMyPassword(userId, passData) {

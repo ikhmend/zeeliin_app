@@ -21,3 +21,17 @@ export async function sendPasswordResetEmail(email, resetLink) {
     `,
   });
 }
+
+export async function sendPasswordSetupEmail(email, setupLink) {
+  return await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: email,
+    subject: "Бүртгэл баталгаажуулах",
+    text: `Бүртгэлээ баталгаажуулж нууц үгээ үүсгэхийн тулд дараах холбоосоор орно уу: ${setupLink}`,
+    html: `
+      <p>Бүртгэлээ баталгаажуулж нууц үгээ үүсгэхийн тулд дараах холбоос дээр дарна уу.</p>
+      <a href="${setupLink}">Нууц үг үүсгэх</a>
+      <p>Нууц үг үүсгэсний дараа вебсайт руу буцаж нэвтэрнэ үү.</p>
+    `,
+  });
+}
