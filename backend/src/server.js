@@ -4,13 +4,21 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import hpp from "hpp";
+import swaggerUi from "swagger-ui-express";
 import "./models/index.js";
 import sequelize from "./config/sequelize.js";
+import { openapiSpec } from "./config/openapi.js";
 import authRoutes from "./modules/auth/auth.route.js";
 import personalRoutes from "./modules/personal/personal.route.js";
-import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
+import {
+  notFoundHandler,
+  errorHandler,
+} from "./middlewares/error.middleware.js";
 import { apiLimit } from "./middlewares/rateLimiting.js";
-import { renderMetrics, requestObservability } from "./middlewares/observability.js";
+import {
+  renderMetrics,
+  requestObservability,
+} from "./middlewares/observability.js";
 import logger from "./utility/logger.js";
 
 dotenv.config({ quiet: true });
@@ -19,7 +27,9 @@ const app = express();
 const port = Number(process.env.PORT) || 5000;
 const trustProxyHops = process.env.TRUST_PROXY_HOPS
   ? Number(process.env.TRUST_PROXY_HOPS)
-  : process.env.NODE_ENV === "production" ? 1 : 0;
+  : process.env.NODE_ENV === "production"
+    ? 1
+    : 0;
 let server;
 let shuttingDown = false;
 
@@ -31,19 +41,31 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .filter(Boolean);
 
 app.use(helmet());
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    const error = new Error("CORS origin зөвшөөрөгдөөгүй.");
-    error.statusCode = 403;
-    return callback(error);
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin))
+        return callback(null, true);
+      const error = new Error("CORS origin зөвшөөрөгдөөгүй.");
+      error.statusCode = 403;
+      return callback(error);
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 app.use(hpp());
 app.use(requestObservability);
+
+app.get("/openapi.json", (req, res) => res.json(openapiSpec));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(openapiSpec, {
+    swaggerOptions: { persistAuthorization: true },
+  }),
+);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", uptimeSeconds: Math.floor(process.uptime()) });
@@ -55,7 +77,10 @@ app.get("/ready", async (req, res) => {
     await sequelize.authenticate();
     databaseReady = true;
   } catch (error) {
-    logger.warn("Readiness database check failed", { requestId: req.id, error });
+    logger.warn("Readiness database check failed", {
+      requestId: req.id,
+      error,
+    });
   }
   const ready = !shuttingDown && databaseReady;
   res.status(ready ? 200 : 503).json({
@@ -66,7 +91,7 @@ app.get("/ready", async (req, res) => {
 
 app.get("/metrics", async (req, res) => {
   const metricsToken = process.env.METRICS_TOKEN;
-  if (metricsToken && req.headers.authorization !== `Bearer ${metricsToken}`) {
+  if (!metricsToken || req.headers.authorization !== `Bearer ${metricsToken}`) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
   let databaseReady = false;
@@ -76,9 +101,11 @@ app.get("/metrics", async (req, res) => {
   } catch {
     databaseReady = false;
   }
-  res.type("text/plain; version=0.0.4").send(renderMetrics({
-    databaseReady,
-  }));
+  res.type("text/plain; version=0.0.4").send(
+    renderMetrics({
+      databaseReady,
+    }),
+  );
 });
 
 app.use("/api", apiLimit);
@@ -90,11 +117,13 @@ app.use(errorHandler);
 async function start() {
   try {
     await sequelize.authenticate();
-    server = app.listen(port, () => logger.info("HTTP server started", {
-      port,
-      environment: process.env.NODE_ENV || "development",
-      trustProxyHops,
-    }));
+    server = app.listen(port, () =>
+      logger.info("HTTP server started", {
+        port,
+        environment: process.env.NODE_ENV || "development",
+        trustProxyHops,
+      }),
+    );
   } catch (error) {
     logger.error("Application startup failed", { error });
     await Promise.allSettled([sequelize.close()]);
@@ -114,7 +143,10 @@ async function shutdown(signal) {
   forceExit.unref();
 
   try {
-    if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    if (server)
+      await new Promise((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
     await Promise.allSettled([sequelize.close()]);
     clearTimeout(forceExit);
     logger.info("Graceful shutdown completed");
@@ -127,7 +159,9 @@ async function shutdown(signal) {
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
-process.on("unhandledRejection", (error) => logger.error("Unhandled rejection", { error }));
+process.on("unhandledRejection", (error) =>
+  logger.error("Unhandled rejection", { error }),
+);
 process.on("uncaughtException", (error) => {
   logger.error("Uncaught exception", { error });
   shutdown("uncaughtException");

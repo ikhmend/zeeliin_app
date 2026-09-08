@@ -10,6 +10,6 @@ const sequelize = new Sequelize(
     port: Number(process.env.DB_PORT),
     dialect: "postgres",
     logging: false,
-  }
+  },
 );
 export default sequelize;

@@ -39,56 +39,64 @@ export function mapProfileResponse(user, customerProfile) {
     profile: mapCustomerProfile(customerProfile),
   };
 }
-export function mapRecentPayment(payment){
-    return {
-        id:payment.id,
-        loan_id: payment.loan_id,
-        payment_amount: Number(payment.payment_amount),
-        payment_date:payment.payment_date,
-        payment_method: payment.payment_method,
-        status:payment.status,
-    }
+export function mapRecentPayment(payment) {
+  return {
+    id: payment.id,
+    loan_id: payment.loan_id,
+    payment_amount: Number(payment.payment_amount),
+    payment_date: payment.payment_date,
+    payment_method: payment.payment_method,
+    status: "paid",
+  };
 }
-export function mapUpcomingInstallment(installment){
-    return {
-        id: installment.id,
-        loan_id: installment.loan_id,
-        due_date: installment.due_date,
-        total_amount: Number(installment.total_amount || 0),
-        paid_amount: Number(installment.paid_amount || 0),
-        remaining_amount: Number(installment.remaining_amount || 0),
-        status: installment.status,
-    }
+export function mapUpcomingInstallment(installment) {
+  return {
+    id: installment.id,
+    loan_id: installment.loan_id,
+    due_date: installment.due_date,
+    total_amount: Number(installment.total_amount || 0),
+    paid_amount: Number(installment.paid_amount || 0),
+    remaining_amount: Number(installment.remaining_amount || 0),
+    status: installment.status,
+  };
 }
-export function mapDashboardResponse({customer, activeLoanCount, totalOutstandingAmount, recentPayments, upcomingInstallments,}){
+export function mapDashboardResponse({
+  customer,
+  activeLoanCount,
+  totalOutstandingAmount,
+  recentPayments,
+  upcomingInstallments,
+}) {
   const nextInstallment = upcomingInstallments[0] ?? null;
   return {
     dashboardData: {
       name: customer.first_name,
       activeLoanCount,
       totalOutstandingAmount: Number(totalOutstandingAmount || 0),
-      nextPaymentAmount: nextInstallment ? Number(nextInstallment.remaining_amount || 0) : null,
-      nextPaymentDate: nextInstallment ? nextInstallment.due_date: null,
+      nextPaymentAmount: nextInstallment
+        ? Number(nextInstallment.remaining_amount || 0)
+        : null,
+      nextPaymentDate: nextInstallment ? nextInstallment.due_date : null,
     },
     recentPayments: recentPayments.map(mapRecentPayment),
     upcomingInstallments: upcomingInstallments.map(mapUpcomingInstallment),
   };
 }
-export function mapPayment(payment){
-    return{
-        id: payment.id,
-        loan_id: payment.loan_id,
-        payment_amount: Number(payment.payment_amount),
-        payment_method: payment.payment_method,
-        payment_date: payment.payment_date,
-    }
+export function mapPayment(payment) {
+  return {
+    id: payment.id,
+    loan_id: payment.loan_id,
+    payment_amount: Number(payment.payment_amount),
+    payment_method: payment.payment_method,
+    payment_date: payment.payment_date,
+  };
 }
-export function mapInstallment(installment){
-    return {
-        id: installment.id,
-        due_date: installment.due_date,
-        total_amount: Number(installment.total_amount),
-        remaining_amount: Number(installment.remaining_amount),
-        status:installment.status,
-    }
+export function mapInstallment(installment) {
+  return {
+    id: installment.id,
+    due_date: installment.due_date,
+    total_amount: Number(installment.total_amount),
+    remaining_amount: Number(installment.remaining_amount),
+    status: installment.status,
+  };
 }

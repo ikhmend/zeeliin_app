@@ -55,9 +55,9 @@ const Installment = sequelize.define(
       allowNull: true,
     },
     paid_amount: {
-        type: DataTypes.DECIMAL(12, 2),
-        allowNull: false,
-        defaultValue: 0,
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
     },
   },
   {
@@ -65,6 +65,6 @@ const Installment = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-  }
+  },
 );
 export default Installment;

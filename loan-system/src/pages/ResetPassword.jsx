@@ -18,6 +18,7 @@ export default function ResetPassword() {
     event.preventDefault();
     if (!token) return setError("Сэргээх холбоос буруу байна.");
     if (newPassword !== confirmPassword) return setError("Нууц үгнүүд таарахгүй байна.");
+    if (!/[a-z]/.test(newPassword) || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword)) return setError("Нууц үг том, жижиг үсэг болон тоо агуулна.");
     try {
       setLoading(true);
       setError("");
@@ -42,8 +43,8 @@ export default function ResetPassword() {
         ) : (
         <form style={styles.card} className="auth-card" onSubmit={handleSubmit}>
           <h2 style={styles.formTitle}>{setupMode ? "Нууц үг үүсгэх" : "Шинэ нууц үг"}</h2>
-          <input type="password" required minLength="8" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Шинэ нууц үг" style={styles.input} />
-          <input type="password" required minLength="8" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Нууц үг давтах" style={styles.input} />
+          <input type="password" required minLength="8" maxLength="72" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Шинэ нууц үг" style={styles.input} />
+          <input type="password" required minLength="8" maxLength="72" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Нууц үг давтах" style={styles.input} />
           {error && <div className="auth-error-message">{error}</div>}
           <button type="submit" style={styles.button} disabled={loading || !token}>{loading ? "Хадгалж байна..." : setupMode ? "Нууц үг үүсгэх" : "Нууц үг шинэчлэх"}</button>
         </form>

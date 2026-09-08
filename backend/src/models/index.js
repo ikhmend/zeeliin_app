@@ -47,6 +47,15 @@ PasswordReset.belongsTo(User, {
 });
 User.hasMany(PasswordReset, {
   foreignKey: "user_id",
-  as:"passwordReset",
+  as: "passwordReset",
 });
-export {sequelize, Loan, Installment, Payment, User, Customer,Employment, PasswordReset};
+export {
+  sequelize,
+  Loan,
+  Installment,
+  Payment,
+  User,
+  Customer,
+  Employment,
+  PasswordReset,
+};

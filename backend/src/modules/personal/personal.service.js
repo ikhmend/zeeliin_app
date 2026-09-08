@@ -7,20 +7,37 @@ import * as paymentsService from "../payments/payments.service.js";
 import * as installmentsService from "../installments/installments.service.js";
 import AppError from "../../utility/AppError.js";
 import sequelize from "../../config/sequelize.js";
-import { mapProfileResponse, mapDashboardResponse, mapPayment, mapInstallment } from "./personal.mapper.js";
+import {
+  mapProfileResponse,
+  mapDashboardResponse,
+  mapPayment,
+  mapInstallment,
+} from "./personal.mapper.js";
 export async function getProfileData(userId, customerId) {
   const user = await authRepository.findUserById(userId);
   if (!user) {
     throw new AppError("Хэрэглэгчийн бүртгэл олдсонгүй.", 404);
   }
-  const customerProfile =await customerRepository.findCustomerProfile(customerId);
+  const customerProfile =
+    await customerRepository.findCustomerProfile(customerId);
   if (!customerProfile) {
     throw new AppError("Харилцагчийн мэдээлэл олдсонгүй.", 404);
   }
   return mapProfileResponse(user, customerProfile);
 }
 export async function updateProfile(userId, customerId, customerData) {
-  const allowedFields = ["phone", "home_phone", "email", "social", "activity_dir", "business_type", "education", "profession", "official_address", "current_address",];
+  const allowedFields = [
+    "phone",
+    "home_phone",
+    "email",
+    "social",
+    "activity_dir",
+    "business_type",
+    "education",
+    "profession",
+    "official_address",
+    "current_address",
+  ];
   const updateData = {};
   for (const field of allowedFields) {
     if (customerData[field] !== undefined) {
@@ -41,22 +58,38 @@ export async function updateProfile(userId, customerId, customerData) {
   }
 
   return await sequelize.transaction(async (transaction) => {
-    const customer = await customerRepository.findCustomer(customerId, transaction);
+    const customer = await customerRepository.findCustomer(
+      customerId,
+      transaction,
+    );
     const user = await authRepository.findUserById(userId, transaction);
     if (!customer || !user || Number(user.customer_id) !== Number(customerId)) {
       throw new AppError("Хэрэглэгчийн профайл олдсонгүй.", 404);
     }
 
-    const conflict = await authRepository.findContactConflict(userId, contactData, transaction);
+    const conflict = await authRepository.findContactConflict(
+      userId,
+      contactData,
+      transaction,
+    );
     if (conflict) {
-      throw new AppError("И-мэйл эсвэл утасны дугаар өөр бүртгэлд ашиглагдсан байна.", 409);
+      throw new AppError(
+        "И-мэйл эсвэл утасны дугаар өөр бүртгэлд ашиглагдсан байна.",
+        409,
+      );
     }
 
-    const updatedCustomer = await customerRepository.updateCustomer(customerId, updateData, transaction);
+    const updatedCustomer = await customerRepository.updateCustomer(
+      customerId,
+      updateData,
+      transaction,
+    );
     if (Object.keys(contactData).length > 0) {
       await authRepository.updateUserContact(userId, contactData, transaction);
     }
-    return Object.fromEntries(allowedFields.map((field) => [field, updatedCustomer[field]]));
+    return Object.fromEntries(
+      allowedFields.map((field) => [field, updatedCustomer[field]]),
+    );
   });
 }
 export async function getMyLoans(customerId) {
@@ -80,9 +113,11 @@ export async function getMyLoanById(customerId, loanId) {
   return await checkLoanOwnership(customerId, loanId);
 }
 export async function getMyLoanInstallments(customerId, loanId) {
-  const loan= await checkLoanOwnership(customerId, loanId);
+  const loan = await checkLoanOwnership(customerId, loanId);
   await installmentsService.updateOverdueInstallments(loan.id);
-  const installments= await installmentsRepository.getInstallmentsByLoanId(loan.id);
+  const installments = await installmentsRepository.getInstallmentsByLoanId(
+    loan.id,
+  );
   return installments.map(mapInstallment);
 }
 export async function getMyLoanPayments(customerId, loanId) {
@@ -92,35 +127,65 @@ export async function getMyLoanPayments(customerId, loanId) {
 }
 export async function getMyPayments(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
-  if (!customer){ 
+  if (!customer) {
     throw new AppError("Харилцагч олдсонгүй.", 404);
   }
-  const payments= await paymentsRepository.findPaymentsByCustomerId(customerId);
+  const payments =
+    await paymentsRepository.findPaymentsByCustomerId(customerId);
   return payments.map(mapPayment);
 }
 export async function getDashboardData(customerId) {
   const customer = await customerRepository.findCustomer(customerId);
-  if (!customer){
+  if (!customer) {
     throw new AppError("Харилцагч олдсонгүй.", 404);
   }
-  const loans =await loansRepository.findLoansByCustomerId(customerId);
-  const activeLoans = loans.filter((loan) =>["active", "overdue"].includes(loan.loan_status));
+  const loans = await loansRepository.findLoansByCustomerId(customerId);
+  const activeLoans = loans.filter((loan) =>
+    ["active", "overdue"].includes(loan.loan_status),
+  );
   const activeLoanCount = activeLoans.length;
-  const recentPayments = await paymentsRepository.findRecentPaymentsByCustomerId(customerId, 3);
-  if (activeLoans.length === 0){
-    return {dashboardData: {name: customer.first_name, activeLoanCount: 0, totalOutstandingAmount: 0, nextPaymentAmount: null,nextPaymentDate: null,}, recentPayments, upcomingInstallments: [],};
+  const recentPayments =
+    await paymentsRepository.findRecentPaymentsByCustomerId(customerId, 3);
+  if (activeLoans.length === 0) {
+    return {
+      dashboardData: {
+        name: customer.first_name,
+        activeLoanCount: 0,
+        totalOutstandingAmount: 0,
+        nextPaymentAmount: null,
+        nextPaymentDate: null,
+      },
+      recentPayments,
+      upcomingInstallments: [],
+    };
   }
-  for (const loan of activeLoans){
+  for (const loan of activeLoans) {
     await installmentsService.updateOverdueInstallments(loan.id);
   }
-  const remainingAmounts = await Promise.all(activeLoans.map((loan) => installmentsRepository.getTotalRemainingAmountByLoanId(loan.id)));
-  const totalOutstandingAmount = remainingAmounts.reduce((sum, amount)=>sum + Number(amount || 0), 0);
-  const upcomingInstallments = await installmentsRepository.findUpcomingInstallmentsByCustomerId(customerId, 3);
+  const remainingAmounts = await Promise.all(
+    activeLoans.map((loan) =>
+      installmentsRepository.getTotalRemainingAmountByLoanId(loan.id),
+    ),
+  );
+  const totalOutstandingAmount = remainingAmounts.reduce(
+    (sum, amount) => sum + Number(amount || 0),
+    0,
+  );
+  const upcomingInstallments =
+    await installmentsRepository.findUpcomingInstallmentsByCustomerId(
+      customerId,
+      3,
+    );
   const nextInstallment = upcomingInstallments[0] ?? null;
-  return mapDashboardResponse({customer,activeLoanCount, totalOutstandingAmount, recentPayments, upcomingInstallments,});
+  return mapDashboardResponse({
+    customer,
+    activeLoanCount,
+    totalOutstandingAmount,
+    recentPayments,
+    upcomingInstallments,
+  });
 }
-export async function makeMyPayment(customerId, loanId, paymentData){
+export async function makeMyPayment(customerId, loanId, paymentData) {
   const loan = await checkLoanOwnership(customerId, loanId);
   return await paymentsService.makePayment(loan.id, paymentData);
 }
-

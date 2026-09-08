@@ -1,15 +1,17 @@
 import { Op } from "sequelize";
 import Loan from "../../models/loan.model.js";
-export async function createLoan(loanData) {
-  return await Loan.create(loanData);
+export async function createLoan(loanData, transaction = null) {
+  return await Loan.create(loanData, { transaction });
 }
 export async function findLoans() {
   return await Loan.findAll({
     order: [["id", "desc"]],
   });
 }
-export async function findLoan(id,transaction = null){
-  return await Loan.findByPk(id, {transaction, lock: transaction ? transaction.LOCK.UPDATE: undefined,
+export async function findLoan(id, transaction = null) {
+  return await Loan.findByPk(id, {
+    transaction,
+    lock: transaction ? transaction.LOCK.UPDATE : undefined,
   }); //lock hiij dawhar tulult hiihees hamgaalna, zeeliin mur transaction hiigdej duustal lock hiij huleene
 }
 export async function updateLoan(id, loanData) {
@@ -19,12 +21,16 @@ export async function updateLoan(id, loanData) {
   }
   return await loan.update(loanData);
 }
-export async function updateLoanAfterPayment(id, updateData, transaction=null) {
-  const loan = await Loan.findByPk(id, {transaction,});
+export async function updateLoanAfterPayment(
+  id,
+  updateData,
+  transaction = null,
+) {
+  const loan = await Loan.findByPk(id, { transaction });
   if (!loan) {
     return null;
   }
-  return await loan.update(updateData, {transaction,});
+  return await loan.update(updateData, { transaction });
 }
 export async function findLoansByCustomerId(customerId) {
   return await Loan.findAll({

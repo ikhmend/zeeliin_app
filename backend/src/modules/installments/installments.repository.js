@@ -1,12 +1,13 @@
 import { Op } from "sequelize";
 import Installment from "../../models/installments.model.js";
 import Loan from "../../models/loan.model.js";
-export async function getInstallmentsByLoanId(loanId) {
+export async function getInstallmentsByLoanId(loanId, transaction = null) {
   return await Installment.findAll({
     where: {
       loan_id: loanId,
     },
     order: [["installment_no", "asc"]],
+    transaction,
   });
 }
 export async function getInstallmentsByCustomerId(customerId) {
@@ -17,12 +18,16 @@ export async function getInstallmentsByCustomerId(customerId) {
     order: [["installment_no", "asc"]],
   });
 }
-export async function createInstallments(installments) {
+export async function createInstallments(installments, transaction = null) {
   return await Installment.bulkCreate(installments, {
     returning: true,
+    transaction,
   });
 }
-export async function findUnpaidInstallmentsByLoanId(loanId, transaction=null){
+export async function findUnpaidInstallmentsByLoanId(
+  loanId,
+  transaction = null,
+) {
   return await Installment.findAll({
     where: {
       loan_id: loanId,
@@ -34,17 +39,25 @@ export async function findUnpaidInstallmentsByLoanId(loanId, transaction=null){
       },
     },
     order: [["installment_no", "asc"]],
-    transaction, lock: transaction ? transaction.LOCK.UPDATE : undefined
+    transaction,
+    lock: transaction ? transaction.LOCK.UPDATE : undefined,
   });
 }
-export async function updateInstallmentPayment(id, updateData, transaction= null) {
-  const installment = await Installment.findByPk(id, {transaction});
+export async function updateInstallmentPayment(
+  id,
+  updateData,
+  transaction = null,
+) {
+  const installment = await Installment.findByPk(id, { transaction });
   if (!installment) {
     return null;
   }
-  return await installment.update(updateData, {transaction});
+  return await installment.update(updateData, { transaction });
 }
-export async function getTotalRemainingAmountByLoanId(loanId, transaction=null){
+export async function getTotalRemainingAmountByLoanId(
+  loanId,
+  transaction = null,
+) {
   const totalRemaining = await Installment.sum("remaining_amount", {
     where: {
       loan_id: loanId,
@@ -53,10 +66,11 @@ export async function getTotalRemainingAmountByLoanId(loanId, transaction=null){
   });
   return Number(totalRemaining || 0);
 }
-export async function markOverdue(loanId, today, transaction=null) {
+export async function markOverdue(loanId, today, transaction = null) {
   const [updatedCount, updatedRows] = await Installment.update(
-    {status: "overdue",},
-    {where: {
+    { status: "overdue" },
+    {
+      where: {
         loan_id: loanId,
         due_date: {
           [Op.lt]: today,
@@ -70,7 +84,7 @@ export async function markOverdue(loanId, today, transaction=null) {
       },
       returning: true,
       transaction,
-    }
+    },
   );
   return updatedRows;
 }
@@ -89,9 +103,32 @@ export async function findNextInstallmentsByLoanId(loanId, limit = 3) {
     limit,
   });
 }
-export async function findUpcomingInstallmentsByCustomerId(customerId,limit = 3){
+export async function hasOverdueInstallments(loanId, transaction = null) {
+  return (
+    (await Installment.count({
+      where: {
+        loan_id: loanId,
+        status: "overdue",
+        remaining_amount: { [Op.gt]: 0 },
+      },
+      transaction,
+    })) > 0
+  );
+}
+export async function findUpcomingInstallmentsByCustomerId(
+  customerId,
+  limit = 3,
+) {
   return await Installment.findAll({
-    attributes: ["due_date", "remaining_amount",],
+    attributes: [
+      "id",
+      "loan_id",
+      "due_date",
+      "total_amount",
+      "paid_amount",
+      "remaining_amount",
+      "status",
+    ],
     where: {
       remaining_amount: {
         [Op.gt]: 0,

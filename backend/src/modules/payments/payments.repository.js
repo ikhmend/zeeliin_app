@@ -1,27 +1,27 @@
 import { Model, Op } from "sequelize";
 import Payment from "../../models/payments.model.js";
 import Loan from "../../models/loan.model.js";
-export async function createPayment(paymentData, transaction=null){
-    return await Payment.create(paymentData, {transaction,});
+export async function createPayment(paymentData, transaction = null) {
+  return await Payment.create(paymentData, { transaction });
 }
-export async function findPaymentsByLoanId(loanId){
-    return await Payment.findAll({
-        where:{
-            loan_id: loanId,
-        },
-        order: [["created_at", "desc"]],
-    });
+export async function findPaymentsByLoanId(loanId) {
+  return await Payment.findAll({
+    where: {
+      loan_id: loanId,
+    },
+    order: [["created_at", "desc"]],
+  });
 }
-export async function findPaymentsByInstallmentId(installmentId){
-    return await Payment.findAll({
-        where:{
-            installment_id:installmentId,
-        },
-        order:[["created_at", "desc"]],
-    });
+export async function findPaymentsByInstallmentId(installmentId) {
+  return await Payment.findAll({
+    where: {
+      installment_id: installmentId,
+    },
+    order: [["created_at", "desc"]],
+  });
 }
-export async function findPaymentById(id){
-    return await Payment.findByPk(id);
+export async function findPaymentById(id) {
+  return await Payment.findByPk(id);
 }
 export async function findPaymentsByCustomerId(customerId) {
   return await Payment.findAll({
@@ -40,13 +40,19 @@ export async function findPaymentsByCustomerId(customerId) {
 }
 export async function findRecentPaymentsByCustomerId(customerId, limit = 3) {
   return await Payment.findAll({
-    attributes:["payment_amount", "payment_date",],
+    attributes: [
+      "id",
+      "loan_id",
+      "payment_amount",
+      "payment_date",
+      "payment_method",
+    ],
     include: [
       {
         model: Loan,
         as: "loan",
         required: true,
-        attributes:[],
+        attributes: [],
         where: {
           customer_id: customerId,
         },

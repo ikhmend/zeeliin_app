@@ -11,10 +11,8 @@ import logger from "../utility/logger.js";
  * @returns {void}
  */
 export function notFoundHandler(req, res, next) {
-  next(new AppError(
-      `${req.method} ${req.originalUrl} endpoint олдсонгүй.`,
-      404
-    )
+  next(
+    new AppError(`${req.method} ${req.originalUrl} endpoint олдсонгүй.`, 404),
   );
 }
 
@@ -49,11 +47,15 @@ export function errorHandler(error, req, res, next) {
   let message = error.message || "Серверийн алдаа.";
   if (error.name === "SequelizeValidationError") {
     status = 400;
-    message = error.errors?.map((item) => item.message).join(", ") || "Оруулсан мэдээлэл шаардлага хангахгүй байна.";
+    message =
+      error.errors?.map((item) => item.message).join(", ") ||
+      "Оруулсан мэдээлэл шаардлага хангахгүй байна.";
   }
   if (error.name === "SequelizeUniqueConstraintError") {
     status = 409;
-    message =error.errors?.map((item) => item.message).join(", ") || "Давхардсан мэдээлэл байна.";
+    message =
+      error.errors?.map((item) => item.message).join(", ") ||
+      "Давхардсан мэдээлэл байна.";
   }
   if (error.name === "SequelizeForeignKeyConstraintError") {
     status = 409;
@@ -67,7 +69,7 @@ export function errorHandler(error, req, res, next) {
     status = 401;
     message = "Нэвтрэх хугацаа дууссан байна.";
   }
-  if (error instanceof SyntaxError && error.type === "entity.parse.failed"){
+  if (error instanceof SyntaxError && error.type === "entity.parse.failed") {
     status = 400;
     message = "JSON өгөгдлийн бүтэц буруу.";
   }
@@ -77,7 +79,8 @@ export function errorHandler(error, req, res, next) {
   }
   return res.status(status).json({
     success: false,
-    message: status === 500 ? "Серверийн дотоод алдаа." : message, ...(process.env.NODE_ENV === "development" && {
+    message: status === 500 ? "Серверийн дотоод алдаа." : message,
+    ...(process.env.NODE_ENV === "development" && {
       error: error.message,
       stack: error.stack,
     }),

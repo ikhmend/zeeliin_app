@@ -13,7 +13,11 @@ const validBody = {
 };
 
 test("registerSchema normalizes launch registration fields", () => {
-  const result = registerSchema.parse({ body: validBody, params: {}, query: {} });
+  const result = registerSchema.parse({
+    body: validBody,
+    params: {},
+    query: {},
+  });
 
   assert.equal(result.body.first_name, "Customer");
   assert.equal(result.body.last_name, "Demo");
@@ -36,7 +40,11 @@ test("register validation middleware rejects bad payloads before controller", ()
   let statusCode;
   let payload;
   let nextCalled = false;
-  const req = { body: { ...validBody, register_no: "bad" }, params: {}, query: {} };
+  const req = {
+    body: { ...validBody, register_no: "bad" },
+    params: {},
+    query: {},
+  };
   const res = {
     status(code) {
       statusCode = code;
@@ -48,7 +56,9 @@ test("register validation middleware rejects bad payloads before controller", ()
     },
   };
 
-  validateRequest(registerSchema)(req, res, () => { nextCalled = true; });
+  validateRequest(registerSchema)(req, res, () => {
+    nextCalled = true;
+  });
 
   assert.equal(statusCode, 400);
   assert.equal(payload.success, false);

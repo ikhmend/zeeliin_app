@@ -1,8 +1,8 @@
-export default class AppError extends Error{
+export default class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
-    this.status = String(statusCode).startsWith("4")? "fail": "error";
+    this.status = String(statusCode).startsWith("4") ? "fail" : "error";
     this.isOperational = true;
     Error.captureStackTrace(this, this.constructor);
   }

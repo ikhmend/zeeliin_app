@@ -1,17 +1,13 @@
 import { Op } from "sequelize";
 import User from "../../models/user.model.js";
 import Session from "../../models/sessions.model.js";
-export async function findUserById(id, transaction = null){
-    return await User.findByPk(id, { transaction });
+export async function findUserById(id, transaction = null) {
+  return await User.findByPk(id, { transaction });
 }
 export async function findUserByLogin(login) {
   return await User.findOne({
     where: {
-      [Op.or]: [
-        {username: login},
-        {email: login},
-        {phone: login},
-      ],
+      [Op.or]: [{ username: login }, { email: login }, { phone: login }],
     },
   });
 }
@@ -20,18 +16,18 @@ export async function createUser(userData, transaction) {
     transaction,
   });
 }
-export async function findUserByUnique({username, phone, email,}){
+export async function findUserByUnique({ username, phone, email }) {
   const conditions = [];
-  if (username){
+  if (username) {
     conditions.push({ username });
   }
-  if (phone){
+  if (phone) {
     conditions.push({ phone });
   }
   if (email) {
     conditions.push({ email });
   }
-  if (conditions.length === 0){
+  if (conditions.length === 0) {
     return null;
   }
   return await User.findOne({
@@ -40,63 +36,79 @@ export async function findUserByUnique({username, phone, email,}){
     },
   });
 }
-export async function findUserByCustomerId(customerId){
+export async function findUserByCustomerId(customerId) {
   return await User.findOne({
-    where:{customer_id: customerId}
+    where: { customer_id: customerId },
   });
 }
-export async function changePassword(userId, newHash){
-  return await User.update({password_hash: newHash}, 
-    {where:{id: userId,}})
+export async function changePassword(userId, newHash, transaction = null) {
+  return await User.update(
+    { password_hash: newHash },
+    { where: { id: userId }, transaction },
+  );
 }
-export async function createRefreshSession(sessionData){
-  return await Session.create(sessionData);
+export async function createRefreshSession(sessionData, transaction = null) {
+  return await Session.create(sessionData, { transaction });
 }
-export async function findSessionByHash(refreshTokenHash){
+export async function findSessionByHash(refreshTokenHash, transaction = null) {
   return await Session.findOne({
     where: {
       token_hash: refreshTokenHash,
     },
   });
 }
-export async function revokeSessionByHash(tokenHash) {
+export async function revokeSessionByHash(tokenHash, transaction = null) {
   const session = await Session.findOne({
     where: {
       token_hash: tokenHash,
     },
+    transaction,
+    lock: transaction ? transaction.LOCK.UPDATE : undefined,
+    transaction,
+    lock: transaction ? transaction.LOCK.UPDATE : undefined,
   });
 
   if (!session) {
     return null;
   }
   session.revoked_at = new Date();
-  await session.save();
+  await session.save({ transaction });
   return session;
 }
-export async function revokeAllSessions(userId, transaction=null){
-  const sessions = await Session.update({
-    revoked_at: new Date(), 
-  },
-  {
-    where: {
-      user_id: userId,
-      revoked_at:null
+export async function revokeAllSessions(userId, transaction = null) {
+  const sessions = await Session.update(
+    {
+      revoked_at: new Date(),
     },
-    transaction,
-  }
-);
+    {
+      where: {
+        user_id: userId,
+        revoked_at: null,
+      },
+      transaction,
+    },
+  );
 }
-export async function updateUserPassword(userId, passwordHash, transaction=null) {
+export async function updateUserPassword(
+  userId,
+  passwordHash,
+  transaction = null,
+) {
   return await User.update(
     {
       password_hash: passwordHash,
     },
     {
-      where: { id: userId }, transaction
+      where: { id: userId },
+      transaction,
     },
   );
 }
-export async function findContactConflict(userId, { phone, email }, transaction = null) {
+export async function findContactConflict(
+  userId,
+  { phone, email },
+  transaction = null,
+) {
   const conditions = [];
   if (phone) conditions.push({ phone });
   if (email) conditions.push({ email });
@@ -110,7 +122,11 @@ export async function findContactConflict(userId, { phone, email }, transaction 
   });
 }
 
-export async function updateUserContact(userId, contactData, transaction = null) {
+export async function updateUserContact(
+  userId,
+  contactData,
+  transaction = null,
+) {
   const user = await User.findByPk(userId, { transaction });
   if (!user) return null;
   return await user.update(contactData, { transaction });

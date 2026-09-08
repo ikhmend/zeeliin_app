@@ -10,24 +10,36 @@ test("launch migration creates the tables required by personal loans", async () 
     dropTable: async () => {},
   };
   const type = (name) => Object.assign(() => name, { type: name });
-  const Sequelize = new Proxy({}, {
-    get: (_, prop) => prop === "fn" ? () => "NOW" : type(prop),
-  });
+  const Sequelize = new Proxy(
+    {},
+    {
+      get: (_, prop) => (prop === "fn" ? () => "NOW" : type(prop)),
+    },
+  );
 
   await migration.up(queryInterface, Sequelize);
 
-  assert.deepEqual(created.map(([name]) => name), [
-    "customers",
-    "users",
-    "loans",
-    "installments",
-    "payments",
-    "employments",
-    "sessions",
-    "password_reset_tokens",
-  ]);
-  assert.equal(created.find(([name]) => name === "customers")[1].register_no.unique, true);
-  assert.equal(created.find(([name]) => name === "loans")[1].loan_product.allowNull, false);
+  assert.deepEqual(
+    created.map(([name]) => name),
+    [
+      "customers",
+      "users",
+      "loans",
+      "installments",
+      "payments",
+      "employments",
+      "sessions",
+      "password_reset_tokens",
+    ],
+  );
+  assert.equal(
+    created.find(([name]) => name === "customers")[1].register_no.unique,
+    true,
+  );
+  assert.equal(
+    created.find(([name]) => name === "loans")[1].loan_product.allowNull,
+    false,
+  );
 });
 
 test("demo seed inserts one personal customer, loan, and three installments", async () => {

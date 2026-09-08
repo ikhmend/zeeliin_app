@@ -98,6 +98,7 @@ export default function Payments() {
         if (method === "cash") return "Бэлэн";
         if (method === "bank") return "Банк";
         if (method === "transfer") return "Шилжүүлэг";
+        if (method === "bank_transfer") return "Банкны шилжүүлэг";
         if (method === "card") return "Карт";
         if (method === "qpay") return "QPay";
 

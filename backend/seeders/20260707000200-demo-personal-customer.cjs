@@ -23,12 +23,14 @@ module.exports = {
     const [existingLoans] = await queryInterface.sequelize.query(
       "SELECT id FROM loans WHERE loan_code = 'PL-DEMO-001' LIMIT 1",
     );
-    const [[loan]] = existingLoans.length ? [existingLoans] : await queryInterface.sequelize.query(
-      `INSERT INTO loans (loan_code, contract_no, account_no, customer_id, branch_id, loan_product, loan_status, loan_amount, loan_amount_currency, currency, interest_rate, fee_percent, fee_amount, duration_month, grace_period_month, previous_loan_balance, created_user_id, updated_user_id, start_date, created_at, updated_at)
+    const [[loan]] = existingLoans.length
+      ? [existingLoans]
+      : await queryInterface.sequelize.query(
+          `INSERT INTO loans (loan_code, contract_no, account_no, customer_id, branch_id, loan_product, loan_status, loan_amount, loan_amount_currency, currency, interest_rate, fee_percent, fee_amount, duration_month, grace_period_month, previous_loan_balance, created_user_id, updated_user_id, start_date, created_at, updated_at)
        VALUES ('PL-DEMO-001', 'CN-DEMO-001', '5000000001', :customerId, 1, 'personal', 'active', 3000000, 'MNT', 'MNT', 2.50, 1.00, 30000, 3, 0, 0, 1, 1, '2026-07-01', :now, :now)
        RETURNING id`,
-      { replacements: { customerId: customer.id, now } },
-    );
+          { replacements: { customerId: customer.id, now } },
+        );
 
     await queryInterface.sequelize.query(
       "DELETE FROM installments WHERE loan_id = :loanId AND installment_no IN (1, 2, 3)",
@@ -36,16 +38,60 @@ module.exports = {
     );
 
     await queryInterface.bulkInsert("installments", [
-      { loan_id: loan.id, installment_no: 1, due_date: "2026-08-01", principal_amount: 1000000, interest_amount: 75000, total_amount: 1075000, remaining_amount: 1075000, status: "pending", paid_amount: 0, created_at: now, updated_at: now },
-      { loan_id: loan.id, installment_no: 2, due_date: "2026-09-01", principal_amount: 1000000, interest_amount: 50000, total_amount: 1050000, remaining_amount: 1050000, status: "pending", paid_amount: 0, created_at: now, updated_at: now },
-      { loan_id: loan.id, installment_no: 3, due_date: "2026-10-01", principal_amount: 1000000, interest_amount: 25000, total_amount: 1025000, remaining_amount: 1025000, status: "pending", paid_amount: 0, created_at: now, updated_at: now },
+      {
+        loan_id: loan.id,
+        installment_no: 1,
+        due_date: "2026-08-01",
+        principal_amount: 1000000,
+        interest_amount: 75000,
+        total_amount: 1075000,
+        remaining_amount: 1075000,
+        status: "pending",
+        paid_amount: 0,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        loan_id: loan.id,
+        installment_no: 2,
+        due_date: "2026-09-01",
+        principal_amount: 1000000,
+        interest_amount: 50000,
+        total_amount: 1050000,
+        remaining_amount: 1050000,
+        status: "pending",
+        paid_amount: 0,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        loan_id: loan.id,
+        installment_no: 3,
+        due_date: "2026-10-01",
+        principal_amount: 1000000,
+        interest_amount: 25000,
+        total_amount: 1025000,
+        remaining_amount: 1025000,
+        status: "pending",
+        paid_amount: 0,
+        created_at: now,
+        updated_at: now,
+      },
     ]);
   },
 
   async down(queryInterface) {
-    await queryInterface.sequelize.query("DELETE FROM installments WHERE loan_id IN (SELECT id FROM loans WHERE loan_code = 'PL-DEMO-001')");
-    await queryInterface.sequelize.query("DELETE FROM loans WHERE loan_code = 'PL-DEMO-001'");
-    await queryInterface.sequelize.query("DELETE FROM users WHERE username = 'demo'");
-    await queryInterface.sequelize.query("DELETE FROM customers WHERE register_no = 'АА12345678'");
+    await queryInterface.sequelize.query(
+      "DELETE FROM installments WHERE loan_id IN (SELECT id FROM loans WHERE loan_code = 'PL-DEMO-001')",
+    );
+    await queryInterface.sequelize.query(
+      "DELETE FROM loans WHERE loan_code = 'PL-DEMO-001'",
+    );
+    await queryInterface.sequelize.query(
+      "DELETE FROM users WHERE username = 'demo'",
+    );
+    await queryInterface.sequelize.query(
+      "DELETE FROM customers WHERE register_no = 'АА12345678'",
+    );
   },
 };

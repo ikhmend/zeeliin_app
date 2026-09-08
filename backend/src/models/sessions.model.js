@@ -53,6 +53,6 @@ const Session = sequelize.define(
         fields: ["expires_at"],
       },
     ],
-  }
+  },
 );
 export default Session;

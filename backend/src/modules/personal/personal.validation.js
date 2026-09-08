@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from "zod";
 export const loanIdSchema = z.object({
   body: z.object({}).optional().default({}),
   params: z.object({
@@ -14,21 +14,18 @@ export const makePaymentSchema = z.object({
     .object({
       payment_amount: z.coerce
         .number()
-        .positive(
-          "Төлөлтийн дүн 0-ээс их байх ёстой."
-        ),
+        .multipleOf(
+          0.01,
+          "Төлөлтийн дүн хамгийн ихдээ 2 орны нарийвчлалтай байна.",
+        )
+        .positive("Төлөлтийн дүн 0-ээс их байх ёстой."),
 
-      payment_method: z.enum([
-        "cash",
-        "bank_transfer",
-        "qpay",
-        "card",
-      ]),
+      payment_method: z.enum(["cash", "bank_transfer", "qpay", "card"]),
       note: z
-      .string()
-      .trim()
-      .max(500, "Тайлбар хамгийн ихдээ 500 тэмдэгт байна.")
-      .optional(),
+        .string()
+        .trim()
+        .max(500, "Тайлбар хамгийн ихдээ 500 тэмдэгт байна.")
+        .optional(),
     })
     .strict(),
   params: z.object({

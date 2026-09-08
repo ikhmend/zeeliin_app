@@ -39,7 +39,9 @@ export function renderMetrics({ databaseReady }) {
   ];
   for (const [key, count] of requestCounts) {
     const [method, status] = key.split(":");
-    lines.push(`zeeliin_http_requests_total{method="${escapeLabel(method)}",status="${escapeLabel(status)}"} ${count}`);
+    lines.push(
+      `zeeliin_http_requests_total{method="${escapeLabel(method)}",status="${escapeLabel(status)}"} ${count}`,
+    );
   }
   lines.push(
     "# HELP zeeliin_http_request_duration_seconds_sum Total request duration.",
