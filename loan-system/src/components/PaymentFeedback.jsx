@@ -35,5 +35,5 @@ const styles = {
   row: { display: "flex", justifyContent: "space-between", gap: 16, padding: "5px 0" },
   label: { color: "#64748b" },
   value: { margin: 0, color: "#0f172a", fontWeight: 700, textAlign: "right" },
-  button: { width: "100%", padding: "11px 16px", border: 0, borderRadius: 9, background: "#1d4ed8", color: "#fff", cursor: "pointer", fontWeight: 700 },
+  button: { width: "100%", padding: "11px 16px", border: 0, borderRadius: 9, background: "#111827", color: "#fff", cursor: "pointer", fontWeight: 700 },
 };

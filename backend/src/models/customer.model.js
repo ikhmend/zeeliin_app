@@ -12,6 +12,10 @@ const Customer = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    citizen_registration_no: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     customer_type: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -77,6 +81,10 @@ const Customer = sequelize.define(
       allowNull: true,
     },
     current_address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    living_address: {
       type: DataTypes.STRING,
       allowNull: true,
     },

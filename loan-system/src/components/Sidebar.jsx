@@ -1,18 +1,12 @@
 import { NavLink } from "react-router-dom";
-import {
-    HomeOutlined,
-    UserOutlined,
-    DollarOutlined,
-    CreditCardOutlined,
-    SettingOutlined,
-} from "@ant-design/icons";
+import { CircleDollarSign, CreditCard, House, Settings, User } from "lucide-react";
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     const menu = [
-        { name: "Dashboard", path: "/dashboard", icon: <HomeOutlined /> },
-        { name: "My Loan", path: "/loans", icon: <DollarOutlined /> },
-        { name: "Payments", path: "/payments", icon: <CreditCardOutlined /> },
-        { name: "Profile", path: "/profile", icon: <UserOutlined /> },
-        { name: "Settings", path: "/settings", icon: <SettingOutlined /> },
+        { name: "Dashboard", path: "/dashboard", icon: <House className="size-4" /> },
+        { name: "My Loan", path: "/loans", icon: <CircleDollarSign className="size-4" /> },
+        { name: "Payments", path: "/payments", icon: <CreditCard className="size-4" /> },
+        { name: "Profile", path: "/profile", icon: <User className="size-4" /> },
+        { name: "Settings", path: "/settings", icon: <Settings className="size-4" /> },
 
     ];
 
@@ -41,12 +35,12 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
                         key={item.name}
                         to={item.path}
                         onClick={onClose}
-                        style={({ isActive }) => ({
+                        style={() => ({
                             ...styles.item,
-                            background: isActive ? "#1d4ed8" : "transparent",
-                            color: "#fff",
+                            color: "#111827",
                             textDecoration: "none",
                         })}
+                        className={({ isActive }) => `text-xs transition-colors hover:bg-slate-100 ${isActive ? "bg-slate-100" : ""}`}
                     >
                         <span style={{ marginRight: 10 }}>{item.icon}</span>
                         {item.name}
@@ -61,11 +55,12 @@ const styles = {
     sidebar: {
         width: 240,
         height: "100vh",
-        background: "#031644",
-        color: "#fff",
+        background: "#fff",
+        color: "#111827",
         display: "flex",
         flexDirection: "column",
-        padding: 20,
+        padding: "16px 20px",
+        borderRight: "1px solid #e5e7eb",
         boxSizing: "border-box",
     },
 
@@ -73,19 +68,20 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        marginBottom: 30,
+        marginBottom: 24,
     },
 
     logo: {
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: "bold",
+        letterSpacing: "-1.5px",
     },
 
     closeButton: {
         display: "none",
         border: "none",
         background: "transparent",
-        color: "#fff",
+        color: "#111827",
         fontSize: "30px",
         lineHeight: 1,
         cursor: "pointer",
@@ -94,11 +90,11 @@ const styles = {
     menu: {
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: 2,
     },
 
     item: {
-        padding: "12px 14px",
+        padding: "9px 0",
         borderRadius: 8,
         cursor: "pointer",
         display: "flex",

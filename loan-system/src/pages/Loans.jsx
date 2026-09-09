@@ -223,8 +223,8 @@ const styles = {
     detailButton: {
     padding: "8px 16px",
     background: "transparent",          
-    color: "#2563eb",               
-    border: "1px solid #2563eb",    
+    color: "#111827",               
+    border: "1px solid #111827",    
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: "14px",

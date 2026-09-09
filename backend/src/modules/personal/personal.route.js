@@ -1,7 +1,6 @@
 import express from "express";
 import * as personalController from "./personal.controller.js";
 import { authMiddleware } from "../auth/auth.middleware.js";
-import { paymentLimit } from "../../middlewares/rateLimiting.js";
 import {
   loanIdSchema,
   makePaymentSchema,
@@ -31,7 +30,6 @@ router.get(
 );
 router.post(
   "/loans/:loanId/payments",
-  paymentLimit,
   validateRequest(makePaymentSchema),
   personalController.makeMyPayment,
 );

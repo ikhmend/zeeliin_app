@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { forgotPasswordApi } from "../api/authApi";
-import styles from "../styles/loginStyles";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -26,18 +28,26 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div style={styles.wrapper} className="auth-wrapper">
-      <div style={styles.right} className="auth-right">
-        <form style={styles.card} className="auth-card" onSubmit={handleSubmit}>
-          <h2 style={styles.formTitle}>Нууц үг сэргээх</h2>
-          <p style={styles.desc}>Бүртгэлтэй и-мэйл хаягаа оруулна уу.</p>
-          <input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="И-мэйл" style={styles.input} />
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <Card className="w-full max-w-sm p-6 sm:p-8">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Нууц үг сэргээх</h1>
+            <p className="mt-2 text-xs text-slate-500">Бүртгэлтэй и-мэйл хаягаа оруулна уу.</p>
+          </div>
+          <Input className="text-xs" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="И-мэйл" />
           {message && <div className="auth-success-message">{message}</div>}
           {error && <div className="auth-error-message">{error}</div>}
-          <button type="submit" style={styles.button} disabled={loading}>{loading ? "Илгээж байна..." : "Сэргээх холбоос авах"}</button>
-          <button type="button" style={{ ...styles.button, background: "#eef2ff", color: "#3b49df", fontFamily: "inherit", marginBottom: 0 }} onClick={() => navigate("/login")}>Нэвтрэх хэсэг рүү буцах</button>
+          <div className="flex flex-col gap-2">
+            <Button type="submit" className="text-[11px]" disabled={loading}>
+              {loading ? "Илгээж байна..." : "Сэргээх холбоос авах"}
+            </Button>
+            <Button type="button" className="text-[11px] border border-slate-200 bg-white text-black hover:bg-slate-50" onClick={() => navigate("/login")}>
+              Нэвтрэх хэсэг рүү буцах
+            </Button>
+          </div>
         </form>
-      </div>
-    </div>
+      </Card>
+    </main>
   );
 }

@@ -1,5 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
-@theme { --font-sans: Inter, ui-sans-serif, system-ui, sans-serif; }
+@theme { --font-sans: "Noto Sans", ui-sans-serif, system-ui, sans-serif; }
 :root { --background:#f8fafc; --foreground:#0f172a; --border:#e2e8f0; }
 * { border-color: var(--border); }
 html, body, #root { min-height:100%; margin:0; }

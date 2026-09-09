@@ -14,10 +14,11 @@ export default async function getDashboardData() {
             remainingAmount: dashboardData.totalOutstandingAmount ?? 0,
             monthlyPayment: dashboardData.nextPaymentAmount ?? 0,
             nextPaymentDate: dashboardData.nextPaymentDate ?? "-",
-            activeLoansCount: dashboardData.activeLoanCount ?? 0,
+        activeLoansCount: dashboardData.activeLoanCount ?? 0,
         },
 
         schedule: root.upcomingInstallments || [],
         recentPayments: root.recentPayments || [],
+        paymentStatusSummary: root.paymentStatusSummary || { paid: 0, unpaid: 0, overdue: 0 },
     };
 }

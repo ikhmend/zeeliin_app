@@ -39,6 +39,11 @@ const Employment = sequelize.define(
       allowNull: true,
     },
 
+    manager_name: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+
     phone: {
       type: DataTypes.STRING(20),
       allowNull: false,

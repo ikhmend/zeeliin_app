@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { getMyPayments } from "../api/LoansApi";
 import StateMessage from "../components/StateMessage";
+import Pagination from "../components/Pagination";
 
-const PAGE_SIZE = 5;
 export default function Payments() {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -89,8 +90,8 @@ export default function Payments() {
 
         return {
             ...base,
-            background: "#dbeafe",
-            color: "#1d4ed8",
+            background: "#f3f4f6",
+            color: "#374151",
         };
     };
 
@@ -130,19 +131,10 @@ export default function Payments() {
         loadPayments();
     }, []);
 
-    const totalPages = Math.max(1, Math.ceil(payments.length / PAGE_SIZE));
-
     const paginatedPayments = payments.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
     );
-
-    const handlePrevPage = () => {
-        setCurrentPage((prev) => Math.max(1, prev - 1));
-    };
-    const handleNextPage = () => {
-        setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-    };
 
     const totalPaidAmount = payments.reduce((sum, payment) => {
         const amount = getValue(
@@ -300,37 +292,13 @@ export default function Payments() {
                             })}
                         </div>
 
-                        <div style={styles.pagination} className="responsive-pagination">
-                            <button
-                                style={{
-                                    ...styles.pageButton,
-                                    ...(currentPage === 1
-                                        ? styles.disabledButton
-                                        : {}),
-                                }}
-                                onClick={handlePrevPage}
-                                disabled={currentPage === 1}
-                            >
-                                {"<"}
-                            </button>
-
-                            <span style={styles.pageInfo}>
-                                {currentPage} / {totalPages}
-                            </span>
-
-                            <button
-                                style={{
-                                    ...styles.pageButton,
-                                    ...(currentPage === totalPages
-                                        ? styles.disabledButton
-                                        : {}),
-                                }}
-                                onClick={handleNextPage}
-                                disabled={currentPage === totalPages}
-                            >
-                                {">"}
-                            </button>
-                        </div>
+                        <Pagination
+                            totalItems={payments.length}
+                            page={currentPage}
+                            pageSize={pageSize}
+                            onPageChange={setCurrentPage}
+                            onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                        />
                     </>
                 )}
             </div>

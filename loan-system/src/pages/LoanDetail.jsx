@@ -3,10 +3,13 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
     getLoanDetail,
     getLoanInstallments,
+    getLoanPayments,
 } from "../api/LoansApi";
+import { getMyProfile } from "../api/ProfileApi";
+import { ArrowLeft, BriefcaseBusiness, CreditCard, Phone, RefreshCw, UserRound } from "lucide-react";
 import StateMessage from "../components/StateMessage";
-
-const PAGE_SIZE = 5;
+import Toast from "../components/Toast";
+import Pagination from "../components/Pagination";
 
 export default function LoanDetail() {
     const { loanId } = useParams();
@@ -15,9 +18,14 @@ export default function LoanDetail() {
 
     const [loan, setLoan] = useState(null);
     const [installments, setInstallments] = useState([]);
+    const [payments, setPayments] = useState([]);
+    const [profile, setProfile] = useState(null);
+    const [activeTab, setActiveTab] = useState("customer");
+    const [toast, setToast] = useState(() => location.state?.toast || null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
 
     const formatMoney = (amount, currency = "MNT") => {
         return (
@@ -99,7 +107,7 @@ export default function LoanDetail() {
         if (status === "overdue") {
             return { ...base, background: "#fee2e2", color: "#b91c1c" };
         }
-        return { ...base, background: "#dbeafe", color: "#1d4ed8" };
+        return { ...base, background: "#f3f4f6", color: "#374151" };
     };
 
     const getInstallmentRemainingAmount = (installment) => {
@@ -124,25 +132,10 @@ export default function LoanDetail() {
         });
     };
 
-const totalPages = Math.max(
-    1,
-    Math.ceil(installments.length / PAGE_SIZE)
-);
-
 const paginatedInstallments = installments.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
 );
-
-const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
-};
-
-const handleNextPage = () => {
-    setCurrentPage((prev) =>
-        Math.min(totalPages, prev + 1)
-    );
-};
 
     useEffect(() => {
         async function loadLoanDetail() {
@@ -150,13 +143,17 @@ const handleNextPage = () => {
                 setLoading(true);
                 setError("");
 
-                const [loanData, installmentData] = await Promise.all([
+                const [loanData, installmentData, profileData, paymentData] = await Promise.all([
                     getLoanDetail(loanId),
                     getLoanInstallments(loanId),
+                    getMyProfile(),
+                    getLoanPayments(loanId),
                 ]);
 
                 setLoan(loanData);
                 setInstallments(installmentData || []);
+                setProfile(profileData);
+                setPayments(paymentData || []);
                 setCurrentPage(1);
             } catch (err) {
                 setError(err.response?.data?.error || "Зээлийн мэдээлэл авахад алдаа гарлаа");
@@ -166,6 +163,12 @@ const handleNextPage = () => {
         }
         loadLoanDetail();
     }, [loanId]);
+
+    useEffect(() => {
+        if (location.state?.toast) {
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.pathname, location.state, navigate]);
 
     useEffect(() => {
         if (!loading && location.hash === "#payment-schedule") {
@@ -185,65 +188,103 @@ const handleNextPage = () => {
     const interestRate = getLoanValue("interest_rate", "interestRate", "interest");
     const feePercent = getLoanValue("fee_percent", "feePercent", "fee_rate");
     const feeAmount = getLoanValue("fee_amount", "feeAmount", "commission_amount");
+    const customer = profile?.profile || {};
+    const totalLoanAmount = Number(loan.loan_amount || loan.amount || 0);
+    const currentBalance = installments.reduce((sum, item) => sum + getInstallmentRemainingAmount(item), 0);
+    const totalPaid = installments.reduce(
+        (sum, item) => sum + Number(item.paid_amount ?? (item.total_amount || 0) - getInstallmentRemainingAmount(item)),
+        0,
+    );
+    const closingAmount = installments.reduce(
+        (sum, item) => sum + Number(item.remaining_amount ?? item.total_amount ?? 0),
+        0,
+    );
 
     return (
+        <>
+        <Toast toast={toast} onClose={() => setToast(null)} />
         <div style={styles.container}>
             <button style={styles.backButton} onClick={() => navigate("/loans")}>
-                Буцах
+                <ArrowLeft className="size-4" />
             </button>
 
             <div style={styles.header}>
                 <div>
                     <h1 style={styles.title}>
-                        {loan.loan_code || loan.loanCode || `Зээл #${loan.id}`}
+                        Зээлийн дэлгэрэнгүй
                     </h1>
                     <p style={styles.subText}>
-                        Гэрээний дугаар: {loan.contract_no || loan.contractNo || "-"}
+                        Код: <strong>{loan.loan_code || loan.loanCode || `Зээл #${loan.id}`}</strong>
+                        <span style={styles.headerDivider}>|</span>
+                        Данс: <strong style={styles.accountText}>{accountNumber || "-"}</strong>
                     </p>
                 </div>
-                <span style={styles.status}>
-                    {getStatusName(loan.loan_status || loan.status)}
-                </span>
+                <div style={styles.headerActions}>
+                    <span style={styles.status}>{getStatusName(loan.loan_status || loan.status)}</span>
+                    <button style={styles.refreshButton} onClick={() => window.location.reload()}>
+                        <RefreshCw className="size-4" /> Шинэчлэх
+                    </button>
+                </div>
             </div>
 
             <div style={styles.cards}>
                 <div style={styles.card}>
-                    <p style={styles.cardLabel}>Зээлийн дүн</p>
-                    <h2 style={styles.cardValue}>{formatMoney(loan.loan_amount || loan.amount, currency)}</h2>
+                    <p style={styles.cardLabel}>Олгогдсон дүн</p>
+                    <h2 style={styles.cardValue}>{formatMoney(totalLoanAmount, currency)}</h2>
                 </div>
                 <div style={styles.card}>
-                    <p style={styles.cardLabel}>Хүү</p>
-                    <h2 style={styles.cardValue}>{formatPercent(interestRate)}</h2>
+                    <p style={styles.cardLabel}>Одоогийн үлдэгдэл</p>
+                    <h2 style={styles.cardValue}>{formatMoney(currentBalance, currency)}</h2>
                 </div>
                 <div style={styles.card}>
-                    <p style={styles.cardLabel}>Хугацаа</p>
-                    <h2 style={styles.cardValue}>{loan.duration_month || 0} сар</h2>
+                    <p style={styles.cardLabel}>Хаах дүн</p>
+                    <h2 style={styles.cardValue}>{formatMoney(closingAmount, currency)}</h2>
                 </div>
                 <div style={styles.card}>
-                    <p style={styles.cardLabel}>Шимтгэл</p>
-                    <h2 style={styles.cardValue}>{formatMoney(feeAmount, currency)}</h2>
+                    <p style={styles.cardLabel}>Нийт төлсөн</p>
+                    <h2 style={styles.cardValue}>{formatMoney(totalPaid, currency)}</h2>
                 </div>
             </div>
 
-            <div style={styles.grid}>
-                <div style={styles.box}>
-                    <h3 style={styles.boxTitle}>Зээлийн үндсэн мэдээлэл</h3>
-                    <InfoRow label="Зээлийн төрөл" value={getProductName(loanProduct)} />
-                    <InfoRow label="Дансны дугаар" value={accountNumber || "-"} />
-                    <InfoRow label="Валют" value={currency || "-"} />
-                    <InfoRow label="Эхэлсэн огноо" value={formatDate(startDate)} />
-                    <InfoRow label="Өмнөх зээлийн үлдэгдэл" value={formatMoney(previousLoanBalance, currency)} />
-                </div>
-
-                <div style={styles.box}>
-                    <h3 style={styles.boxTitle}>Хүү, шимтгэлийн мэдээлэл</h3>
-                    <InfoRow label="Хүүгийн хувь" value={formatPercent(interestRate)} />
-                    <InfoRow label="Шимтгэлийн хувь" value={formatPercent(feePercent)} />
-                    <InfoRow label="Шимтгэлийн дүн" value={formatMoney(feeAmount, currency)} />
-                </div>
+            <div style={styles.tabs}>
+                <button style={activeTab === "customer" ? styles.activeTab : styles.tab} onClick={() => setActiveTab("customer")}>Хэрэглэгчийн мэдээлэл</button>
+                <button style={activeTab === "loan" ? styles.activeTab : styles.tab} onClick={() => setActiveTab("loan")}>Зээл</button>
+                <button style={activeTab === "schedule" ? styles.activeTab : styles.tab} onClick={() => setActiveTab("schedule")}>Төлөлтийн хуваарь</button>
+                <button style={activeTab === "payments" ? styles.activeTab : styles.tab} onClick={() => setActiveTab("payments")}>Төлөлтийн түүх</button>
             </div>
 
-            <div id="payment-schedule" style={styles.section}>
+            {activeTab === "customer" && <div style={styles.customerBox}>
+                <div style={styles.customerHeader}>
+                    <div style={styles.customerIdentity}>
+                        <div style={styles.avatar}><UserRound className="size-6" /></div>
+                        <div>
+                            <h3 style={styles.customerName}>{`${customer.last_name || ""} ${customer.first_name || ""}`.trim() || "Хэрэглэгч"}</h3>
+                            <p style={styles.customerSubtext}>Хэрэглэгчийн үндсэн мэдээлэл</p>
+                        </div>
+                    </div>
+                    <button style={styles.detailButton} onClick={() => navigate("/profile")}>Дэлгэрэнгүй харах</button>
+                </div>
+                <div style={styles.customerFields}>
+                    <InfoCard icon={<CreditCard />} label="Регистр" value={customer.register_no || "-"} />
+                    <InfoCard icon={<Phone />} label="Утас" value={customer.phone || "-"} />
+                    <InfoCard icon={<Phone />} label="Утас 2" value={customer.home_phone || "-"} />
+                    <InfoCard icon={<BriefcaseBusiness />} label="Ажлын газар" value={customer.activity_dir || "-"} />
+                </div>
+            </div>}
+
+            {activeTab === "loan" && <div id="loan-info" style={styles.loanInfo}>
+                <h3 style={styles.boxTitle}>Зээлийн мэдээлэл</h3>
+                <InfoRow label="Зээлийн төрөл" value={getProductName(loanProduct)} />
+                <InfoRow label="Валют" value={currency || "-"} />
+                <InfoRow label="Эхэлсэн огноо" value={formatDate(startDate)} />
+                <InfoRow label="Хугацаа" value={`${loan.duration_month || 0} сар`} />
+                <InfoRow label="Хүүгийн хувь" value={formatPercent(interestRate)} />
+                <InfoRow label="Шимтгэлийн хувь" value={formatPercent(feePercent)} />
+                <InfoRow label="Шимтгэлийн дүн" value={formatMoney(feeAmount, currency)} />
+                <InfoRow label="Өмнөх зээлийн үлдэгдэл" value={formatMoney(previousLoanBalance, currency)} />
+            </div>}
+
+            {activeTab === "schedule" && <div id="payment-schedule" style={styles.section}>
                 <div style={styles.scheduleHeader}>
                     <div>
                         <h3 style={styles.boxTitle}>Төлөлтийн хуваарь</h3>
@@ -316,33 +357,50 @@ const handleNextPage = () => {
                             </div>
                         </div>
 
-                        <div style={styles.pagination}>
-                            <button
-                                style={{ ...styles.pageButton, ...(currentPage === 1 ? styles.disabledButton : {}) }}
-                                onClick={handlePrevPage}
-                                disabled={currentPage === 1}
-                            >
-                                {"<"}
-                            </button>
-                            <span style={styles.pageInfo}>{currentPage} / {totalPages}</span>
-                            <button
-                                style={{ ...styles.pageButton, ...(currentPage === totalPages ? styles.disabledButton : {}) }}
-                                onClick={handleNextPage}
-                                disabled={currentPage === totalPages}
-                            >
-                                {">"}
-                            </button>
-                        </div>
+                        <Pagination
+                            totalItems={installments.length}
+                            page={currentPage}
+                            pageSize={pageSize}
+                            onPageChange={setCurrentPage}
+                            onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                        />
                     </>
                 )}
-            </div>
+            </div>}
+
+            {activeTab === "payments" && <div style={styles.section}>
+                <h3 style={styles.boxTitle}>Төлөлтийн түүх</h3>
+                {payments.length === 0 ? (
+                    <p style={styles.emptyText}>Төлөлтийн түүх байхгүй байна.</p>
+                ) : (
+                    <div style={styles.paymentList}>
+                        {payments.map((payment) => (
+                            <div key={payment.id} style={styles.paymentRow}>
+                                <span>{formatDate(payment.payment_date)}</span>
+                                <strong>{formatMoney(payment.payment_amount, currency)}</strong>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>}
         </div>
+        </>
     );
 }
 
 function InfoRow({ label, value }) {
     return (
         <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>{label}</span>
+            <strong style={styles.infoValue}>{value}</strong>
+        </div>
+    );
+}
+
+function InfoCard({ icon, label, value }) {
+    return (
+        <div style={styles.infoCard}>
+            <div style={styles.infoCardIcon}>{icon}</div>
             <span style={styles.infoLabel}>{label}</span>
             <strong style={styles.infoValue}>{value}</strong>
         </div>
@@ -357,28 +415,24 @@ const styles = {
         boxSizing: "border-box",
     },
     backButton: {
-        marginBottom: "18px",
+        marginBottom: "12px",
         background: "transparent",
         border: "none",
-        color: "#2563eb",
+        color: "#0f172a",
         cursor: "pointer",
-        fontSize: "14px",
-        fontWeight: "600",
         padding: 0,
     },
     header: {
-        background: "white",
-        borderRadius: "16px",
-        padding: "24px",
-        border: "1px solid #f1f5f9",
-        boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: "24px",
+        alignItems: "center",
+        marginBottom: "28px",
     },
-    title: { margin: "0 0 8px 0", fontSize: "24px", color: "#0f172a" },
+    title: { margin: "0 0 6px 0", fontSize: "24px", color: "#0f172a" },
     subText: { margin: 0, color: "#64748b", fontSize: "14px" },
+    headerDivider: { margin: "0 8px", color: "#94a3b8" },
+    accountText: { color: "#111827" },
+    headerActions: { display: "flex", alignItems: "center", gap: "10px" },
     status: {
         padding: "7px 14px",
         borderRadius: "999px",
@@ -388,21 +442,136 @@ const styles = {
         fontWeight: "700",
         whiteSpace: "nowrap",
     },
+    refreshButton: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "8px 14px",
+        border: "1px solid #cbd5e1",
+        borderRadius: "10px",
+        background: "white",
+        color: "#0f172a",
+        cursor: "pointer",
+        fontSize: "14px",
+        fontWeight: "600",
+    },
     cards: {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", // Гар утсанд автоматаар доошоо шилжинэ
         gap: "20px",
-        marginBottom: "24px",
+        marginBottom: "28px",
     },
     card: {
         background: "white",
-        padding: "22px",
-        borderRadius: "16px",
-        border: "1px solid #f1f5f9",
-        boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
+        padding: "22px 20px",
+        borderRadius: "12px",
+        border: "1px solid #e2e8f0",
+        boxShadow: "none",
     },
     cardLabel: { margin: "0 0 8px 0", color: "#64748b", fontSize: "14px" },
     cardValue: { margin: 0, color: "#0f172a", fontSize: "18px", fontWeight: "700" },
+    tabs: {
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        width: "fit-content",
+        marginBottom: "12px",
+        padding: "4px",
+        borderRadius: "12px",
+        background: "#f1f5f9",
+    },
+    tab: {
+        border: "none",
+        background: "transparent",
+        padding: "10px 14px",
+        borderRadius: "9px",
+        color: "#0f172a",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: "600",
+    },
+    activeTab: {
+        border: "none",
+        background: "white",
+        padding: "10px 14px",
+        borderRadius: "9px",
+        color: "#0f172a",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: "700",
+        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.12)",
+    },
+    customerBox: {
+        background: "white",
+        border: "1px solid #e2e8f0",
+        borderRadius: "16px",
+        marginBottom: "24px",
+        overflow: "hidden",
+    },
+    customerHeader: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "24px",
+        borderBottom: "1px solid #e2e8f0",
+    },
+    customerIdentity: { display: "flex", alignItems: "center", gap: "14px" },
+    avatar: {
+        display: "grid",
+        placeItems: "center",
+        width: "54px",
+        height: "54px",
+        borderRadius: "50%",
+        background: "#f3f4f6",
+        color: "#111827",
+    },
+    customerName: { margin: 0, fontSize: "18px", color: "#0f172a" },
+    customerSubtext: { margin: "5px 0 0", color: "#64748b", fontSize: "13px" },
+    detailButton: {
+        padding: "10px 16px",
+        border: "1px solid #e2e8f0",
+        borderRadius: "10px",
+        background: "white",
+        color: "#0f172a",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: "700",
+    },
+    customerFields: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: "14px",
+        padding: "24px",
+    },
+    infoCard: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "8px",
+        minHeight: "82px",
+        padding: "16px 18px",
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        textAlign: "left",
+    },
+    infoCardIcon: { color: "#64748b", height: "20px" },
+    loanInfo: {
+        background: "white",
+        border: "1px solid #e2e8f0",
+        borderRadius: "16px",
+        padding: "24px",
+        marginBottom: "24px",
+    },
+    paymentList: { display: "grid", gap: "0" },
+    paymentRow: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "14px 0",
+        borderBottom: "1px solid #e2e8f0",
+        color: "#475569",
+        fontSize: "14px",
+    },
     grid: {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", // Гар утсанд 1 багана болно
@@ -497,7 +666,7 @@ const styles = {
         padding: "9px 14px",
         borderRadius: "10px",
         border: "none",
-        background: "#2563eb",
+        background: "#111827",
         color: "white",
         cursor: "pointer",
         fontSize: "13px",

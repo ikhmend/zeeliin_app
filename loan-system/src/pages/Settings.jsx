@@ -51,7 +51,7 @@ const styles = {
   title: { margin: "0 0 20px", color: "#0f172a" },
   label: { marginBottom: 6, color: "#475569", fontSize: 14, fontWeight: 600 },
   input: { height: 42, marginBottom: 16, padding: "0 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 15 },
-  button: { padding: "12px 16px", border: 0, borderRadius: 8, background: "#2563eb", color: "#fff", fontWeight: 700, cursor: "pointer" },
+  button: { padding: "12px 16px", border: 0, borderRadius: 8, background: "#111827", color: "#fff", fontWeight: 700, cursor: "pointer" },
   success: { marginBottom: 14, padding: 12, borderRadius: 8, background: "#dcfce7", color: "#15803d" },
   error: { marginBottom: 14, padding: 12, borderRadius: 8, background: "#fee2e2", color: "#b91c1c" },
 };

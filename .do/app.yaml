@@ -1,0 +1,142 @@
+name: zeeliin-test
+region: sgp
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+
+databases:
+  - name: test-db
+    engine: PG
+    version: "16"
+
+envs:
+  - key: NODE_ENV
+    value: production
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DB_HOST
+    value: ${test-db.HOSTNAME}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DB_PORT
+    value: ${test-db.PORT}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DB_DATABASE
+    value: ${test-db.DATABASE}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DB_USER
+    value: ${test-db.USERNAME}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DB_PASSWORD
+    value: ${test-db.PASSWORD}
+    scope: RUN_TIME
+    type: SECRET
+  - key: CORS_ORIGIN
+    value: ${APP_URL}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: FRONTEND_URL
+    value: ${APP_URL}
+    scope: RUN_TIME
+    type: GENERAL
+  - key: COOKIE_SECURE
+    value: "true"
+    scope: RUN_TIME
+    type: GENERAL
+  - key: COOKIE_SAME_SITE
+    value: lax
+    scope: RUN_TIME
+    type: GENERAL
+  - key: TRUST_PROXY_HOPS
+    value: "1"
+    scope: RUN_TIME
+    type: GENERAL
+  - key: LOG_LEVEL
+    value: info
+    scope: RUN_TIME
+    type: GENERAL
+  - key: DEMO_PAYMENTS_ENABLED
+    value: "false"
+    scope: RUN_TIME
+    type: GENERAL
+
+jobs:
+  - name: migrate-and-seed
+    kind: PRE_DEPLOY
+    github:
+      repo: ikhmend/zeeliin_app
+      branch: main
+      deploy_on_push: true
+    source_dir: backend
+    environment_slug: node-js
+    build_command: npm ci
+    run_command: npm run db:migrate && npm run db:seed
+
+services:
+  - name: api
+    github:
+      repo: ikhmend/zeeliin_app
+      branch: main
+      deploy_on_push: true
+    source_dir: backend
+    environment_slug: node-js
+    build_command: npm ci
+    run_command: npm start
+    http_port: 5000
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 10
+
+static_sites:
+  - name: web
+    github:
+      repo: ikhmend/zeeliin_app
+      branch: main
+      deploy_on_push: true
+    source_dir: loan-system
+    build_command: npm ci && npm run build
+    output_dir: dist
+    error_document: index.html
+
+ingress:
+  rules:
+    - match:
+        path:
+          prefix: /api
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /api-docs
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /openapi.json
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /health
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /ready
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /
+      component:
+        name: web

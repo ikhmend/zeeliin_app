@@ -30,6 +30,7 @@ export async function updateProfile(userId, customerId, customerData) {
     "phone",
     "home_phone",
     "email",
+    "citizen_registration_no",
     "social",
     "activity_dir",
     "business_type",
@@ -37,14 +38,20 @@ export async function updateProfile(userId, customerId, customerData) {
     "profession",
     "official_address",
     "current_address",
+    "living_address",
   ];
   const updateData = {};
+  const employmentData = Object.fromEntries(
+    Object.entries(customerData.employment || {})
+      .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+      .map(([key, value]) => [key === "manager_phone" ? "phone" : key, value]),
+  );
   for (const field of allowedFields) {
     if (customerData[field] !== undefined) {
       updateData[field] = customerData[field];
     }
   }
-  if (Object.keys(updateData).length === 0) {
+  if (Object.keys(updateData).length === 0 && Object.keys(employmentData).length === 0) {
     throw new AppError("Өөрчлөх мэдээлэл олдсонгүй.", 400);
   }
   const contactData = {};
@@ -79,11 +86,16 @@ export async function updateProfile(userId, customerId, customerData) {
       );
     }
 
-    const updatedCustomer = await customerRepository.updateCustomer(
-      customerId,
-      updateData,
-      transaction,
-    );
+    const updatedCustomer = Object.keys(updateData).length
+      ? await customerRepository.updateCustomer(customerId, updateData, transaction)
+      : customer;
+    if (Object.keys(employmentData).length > 0) {
+      await customerRepository.upsertEmployment(
+        customerId,
+        employmentData,
+        transaction,
+      );
+    }
     if (Object.keys(contactData).length > 0) {
       await authRepository.updateUserContact(userId, contactData, transaction);
     }
@@ -146,6 +158,25 @@ export async function getDashboardData(customerId) {
   const activeLoanCount = activeLoans.length;
   const recentPayments =
     await paymentsRepository.findRecentPaymentsByCustomerId(customerId, 3);
+  for (const loan of activeLoans) {
+    await installmentsService.updateOverdueInstallments(loan.id);
+  }
+  const installments = await installmentsRepository.getInstallmentsByCustomerId(
+    customerId,
+  );
+  const paymentStatusSummary = installments.reduce(
+    (summary, installment) => {
+      const status =
+        installment.status === "paid"
+          ? "paid"
+          : installment.status === "overdue"
+            ? "overdue"
+            : "unpaid";
+      summary[status] += 1;
+      return summary;
+    },
+    { paid: 0, unpaid: 0, overdue: 0 },
+  );
   if (activeLoans.length === 0) {
     return {
       dashboardData: {
@@ -157,10 +188,8 @@ export async function getDashboardData(customerId) {
       },
       recentPayments,
       upcomingInstallments: [],
+      paymentStatusSummary,
     };
-  }
-  for (const loan of activeLoans) {
-    await installmentsService.updateOverdueInstallments(loan.id);
   }
   const remainingAmounts = await Promise.all(
     activeLoans.map((loan) =>
@@ -183,6 +212,7 @@ export async function getDashboardData(customerId) {
     totalOutstandingAmount,
     recentPayments,
     upcomingInstallments,
+    paymentStatusSummary,
   });
 }
 export async function makeMyPayment(customerId, loanId, paymentData) {

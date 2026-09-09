@@ -15,11 +15,13 @@ export function mapCustomerProfile(customer) {
   }
   return {
     id: customer.id,
+    customer_type: customer.customer_type,
     customer_code: customer.customer_code,
     family_name: customer.family_name,
     last_name: customer.last_name,
     first_name: customer.first_name,
     register_no: customer.register_no,
+    citizen_registration_no: customer.citizen_registration_no,
     phone: customer.phone,
     home_phone: customer.home_phone,
     email: customer.email,
@@ -29,8 +31,21 @@ export function mapCustomerProfile(customer) {
     education: customer.education,
     profession: customer.profession,
     birth_date: customer.birth_date,
+    birth_place: customer.birth_place,
     official_address: customer.official_address,
     current_address: customer.current_address,
+    living_address: customer.living_address,
+    employment: customer.employment
+      ? {
+          organization_name: customer.employment.organization_name,
+          position: customer.employment.position,
+          worked_year: customer.employment.worked_year,
+          monthly_salary: Number(customer.employment.monthly_salary || 0),
+          organization_address: customer.employment.organization_address,
+          manager_name: customer.employment.manager_name,
+          manager_phone: customer.employment.phone,
+        }
+      : null,
   };
 }
 export function mapProfileResponse(user, customerProfile) {
@@ -66,6 +81,7 @@ export function mapDashboardResponse({
   totalOutstandingAmount,
   recentPayments,
   upcomingInstallments,
+  paymentStatusSummary,
 }) {
   const nextInstallment = upcomingInstallments[0] ?? null;
   return {
@@ -80,6 +96,7 @@ export function mapDashboardResponse({
     },
     recentPayments: recentPayments.map(mapRecentPayment),
     upcomingInstallments: upcomingInstallments.map(mapUpcomingInstallment),
+    paymentStatusSummary,
   };
 }
 export function mapPayment(payment) {
@@ -96,6 +113,7 @@ export function mapInstallment(installment) {
     id: installment.id,
     due_date: installment.due_date,
     total_amount: Number(installment.total_amount),
+    paid_amount: Number(installment.paid_amount),
     remaining_amount: Number(installment.remaining_amount),
     status: installment.status,
   };

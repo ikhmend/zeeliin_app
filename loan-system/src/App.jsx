@@ -19,6 +19,7 @@ import { bootstrapSession } from "./services/authService";
 
 export default function App() {
   const [authStatus, setAuthStatus] = useState("loading");
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -28,7 +29,12 @@ export default function App() {
       if (active) setAuthStatus("guest");
     });
     bootstrapSession()
-      .then(() => active && setAuthStatus("authenticated"))
+      .then((account) => {
+        if (active) {
+          setUser(account);
+          setAuthStatus("authenticated");
+        }
+      })
       .catch(() => {
         clearAccessToken();
         if (active) setAuthStatus("guest");
@@ -39,7 +45,10 @@ export default function App() {
     };
   }, []);
 
-  const handleLogin = () => setAuthStatus("authenticated");
+  const handleLogin = (account) => {
+    setUser(account);
+    setAuthStatus("authenticated");
+  };
 
   const handleLogout = async () => {
     try {
@@ -48,6 +57,7 @@ export default function App() {
       // Logout still clears local session if the server session is already gone.
     } finally {
       clearAccessToken();
+      setUser(null);
       setAuthStatus("guest");
     }
   };
@@ -68,7 +78,7 @@ export default function App() {
         <Route path="/reset-password" element={guestOnly(<ResetPassword />)} />
 
         <Route element={<ProtectedRoute authStatus={authStatus} />}>
-          <Route element={<MainLayout onLogout={handleLogout} />}>
+          <Route element={<MainLayout user={user} onLogout={handleLogout} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/loans" element={<Loans />} />
             <Route path="/loans/:loanId" element={<LoanDetail />} />

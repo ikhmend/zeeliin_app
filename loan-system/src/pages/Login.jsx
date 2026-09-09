@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import styles from "../styles/loginStyles"; 
 import { loginUser } from "../services/authService";
-import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function Login({ onLogin }) {
     const [username, setUsername] = useState("");
@@ -14,7 +16,8 @@ export default function Login({ onLogin }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const handleLogin = async () => {
+    const handleLogin = async (event) => {
+        event.preventDefault();
         if (!username || !password) {
             setError("Username болон password оруулна уу");
             return;
@@ -44,87 +47,66 @@ export default function Login({ onLogin }) {
     };
 
     return (
-        <div style={styles.wrapper} className="auth-wrapper">
-
-            <div style={styles.left} className="auth-left">
-                <div style={styles.tagRow}>
-                    <div style={styles.tagIcon}>LC</div>
-                <div style={styles.tag}>ХУВИЙН ЗЭЭЛИЙН СИСТЕМ</div>
+        <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+            <Card className="w-full max-w-sm p-6 sm:p-8">
+                <div className="mb-6 text-center">
+                    <h1 className="mt-2 text-2xl font-semibold tracking-tight">Нэвтрэх</h1>
                 </div>
-
-                <h1 style={styles.title}>Зээлийн мэдээллээ нэг дороос хянах</h1>
-
-                <p style={styles.desc}>
-                    Өөрийн хувийн зээл, төлөлтийн хуваарь, профайл мэдээллээ шалгана уу.
-                </p>
-            </div>
-            <div style={styles.right} className="auth-right">
-                <div style={styles.card} className="auth-card">
-                    <div style={styles.logoRow}>
-                        <span style={styles.logoIcon}>LC</span> Зээлийн систем
-                    </div>
-
-                    <h2 style={styles.formTitle}>Нэвтрэх</h2>
+                <form className="space-y-4" onSubmit={handleLogin}>
                     {location.state?.registered && (
-                        <div className="auth-success-message">
+                        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
                             Бүртгэл үүслээ. {location.state.email || "И-мэйл"} хаягаар очсон холбоосоор нууц үгээ үүсгэнэ үү.
                         </div>
                     )}
                     {location.state?.passwordReset && (
-                        <div className="auth-success-message">Нууц үг шинэчлэгдлээ. Шинэ нууц үгээрээ нэвтэрнэ үү.</div>
+                        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">Нууц үг шинэчлэгдлээ. Шинэ нууц үгээрээ нэвтэрнэ үү.</div>
                     )}
-                    <div style={{ ...styles.inputWrapper, marginBottom: "20px" }}>
-                        <FiUser style={styles.inputIcon} />
-                        <input
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium" htmlFor="login">Нэвтрэх нэр</label>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                            <Input
+                            id="login"
                             placeholder="Утас, и-мэйл эсвэл нэвтрэх нэр"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            style={{ ...styles.cleanInput, fontSize: styles.input.fontSize || "15px", padding: "16px 40px" }}
-                        />
+                            className="pl-9"
+                            autoComplete="username"
+                            />
+                        </div>
                     </div>
-                    <div style={{ ...styles.inputWrapper, marginBottom: "20px" }}>
-                        <FiLock style={styles.inputIcon} />
-                        <input
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium" htmlFor="password">Нууц үг</label>
+                        <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                            <Input
+                            id="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="Нууц үг"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{ ...styles.cleanInput, fontSize: styles.input.fontSize || "15px", padding: "16px 40px" }}
-                        />
-                        <div 
-                            onClick={() => setShowPassword(!showPassword)} 
-                            style={styles.eyeIcon}
-                        >
-                            {showPassword ? <FiEyeOff /> : <FiEye />}
+                            className="px-9"
+                            autoComplete="current-password"
+                            />
+                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-950" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Нууц үг нуух" : "Нууц үг харуулах"}>
+                                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
                         </div>
                     </div>
 
                     {error && (
-                        <div style={{ color: "red", marginBottom: "12px", fontSize: "14px", textAlign: "left" }}>
+                        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
                             {error}
                         </div>
                     )}
-                    <button
-                        onClick={handleLogin}
-                        style={{ ...styles.button, ...styles.blueButton, margin: "12px 0 24px 0" }}
-                        disabled={loading}
-                    >
+                    <Button type="submit" disabled={loading}>
                         {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
-                    </button>
-
-                    <p style={styles.footer}>
-                        <span style={styles.footerLink} onClick={() => navigate("/forgot-password")}>
-                            Нууц үгээ мартсан уу?
-                        </span>
+                    </Button>
+                    <p className="text-center text-sm text-slate-500">
+                        <button type="button" className="font-medium text-black underline underline-offset-4" onClick={() => navigate("/forgot-password")}>Нууц үг мартсан</button>
                     </p>
-                    <p style={styles.footer}>
-                        Шинэ хэрэглэгч үү?{" "}
-                        <span style={styles.footerLink} onClick={() => navigate("/register")}>
-                            Бүртгүүлэх
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
+                </form>
+            </Card>
+        </main>
     );
 }

@@ -63,6 +63,12 @@ export const updateProfileSchema = z.object({
         .max(100, "Сошиал мэдээлэл хэт урт байна.")
         .nullable()
         .optional(),
+      citizen_registration_no: z
+        .string()
+        .trim()
+        .max(50, "Иргэний бүртгэлийн дугаар хэт урт байна.")
+        .nullable()
+        .optional(),
       activity_dir: z
         .string()
         .trim()
@@ -102,6 +108,28 @@ export const updateProfileSchema = z.object({
         .trim()
         .max(500, "Оршин суугаа хаяг хэт урт байна.")
         .nullable()
+        .optional(),
+      living_address: z
+        .string()
+        .trim()
+        .max(500, "Амьдарч байгаа хаяг хэт урт байна.")
+        .nullable()
+        .optional(),
+      employment: z
+        .object({
+          organization_name: z.string().trim().max(255).optional(),
+          position: z.string().trim().max(100).optional(),
+          worked_year: z.coerce.number().int().min(0).max(80).optional(),
+          monthly_salary: z.coerce.number().min(0).max(1_000_000_000).optional(),
+          organization_address: z.string().trim().max(1000).optional(),
+          manager_name: z.string().trim().max(255).optional(),
+          manager_phone: z
+            .string()
+            .trim()
+            .regex(/^\d{8}$/, "Удирдах ажилтны утас 8 оронтой байна.")
+            .optional(),
+        })
+        .strict()
         .optional(),
     })
     .strict()

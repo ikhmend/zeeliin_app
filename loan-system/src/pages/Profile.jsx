@@ -1,20 +1,31 @@
 import { useEffect, useState } from "react";
 import { getMyProfile, updateMyProfile } from "../api/ProfileApi";
 import StateMessage from "../components/StateMessage";
+import Toast from "../components/Toast";
 
 function profileToForm(data) {
     const acc = data?.account || {};
     const prof = data?.profile || {};
+    const employment = prof.employment || {};
     return {
         email: prof.email || acc.email || "",
         phone: String(prof.phone || acc.phone || ""),
+        citizen_registration_no: prof.citizen_registration_no || "",
         current_address: prof.current_address || "",
         official_address: prof.official_address || "",
+        living_address: prof.living_address || "",
         social: prof.social || "",
         activity_dir: prof.activity_dir || "",
         business_type: prof.business_type || "",
         education: prof.education || "",
         profession: prof.profession || "",
+        organization_name: employment.organization_name || "",
+        position: employment.position || "",
+        worked_year: employment.worked_year ?? "",
+        monthly_salary: employment.monthly_salary ?? "",
+        organization_address: employment.organization_address || "",
+        manager_name: employment.manager_name || "",
+        manager_phone: employment.manager_phone || "",
     };
 }
 
@@ -24,20 +35,29 @@ export default function Profile() {
     const [form, setForm] = useState({
         email: "",
         phone: "",
+        citizen_registration_no: "",
         current_address: "",
         official_address: "",
+        living_address: "",
         social: "",
         activity_dir: "",
         business_type: "",
         education: "",
         profession: "",
+        organization_name: "",
+        position: "",
+        worked_year: "",
+        monthly_salary: "",
+        organization_address: "",
+        manager_name: "",
+        manager_phone: "",
     });
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    const [toast, setToast] = useState(null);
 
     const account = profileData?.account || {};
     const profile = profileData?.profile || {};
@@ -109,7 +129,7 @@ export default function Profile() {
         setForm(profileToForm(profileData));
         setEditMode(false);
         setError("");
-        setSuccess("");
+        setToast(null);
     };
 
     const handleSubmit = async (e) => {
@@ -118,23 +138,35 @@ export default function Profile() {
         try {
             setSaving(true);
             setError("");
-            setSuccess("");
+            setToast(null);
 
             const payload = {
                 email: form.email,
                 phone: form.phone,
+                citizen_registration_no: form.citizen_registration_no,
                 current_address: form.current_address,
                 official_address: form.official_address,
+                living_address: form.living_address,
                 social: form.social,
                 activity_dir: form.activity_dir,
                 business_type: form.business_type,
                 education: form.education,
                 profession: form.profession,
             };
+            const employment = {
+                organization_name: form.organization_name,
+                position: form.position,
+                worked_year: form.worked_year,
+                monthly_salary: form.monthly_salary,
+                organization_address: form.organization_address,
+                manager_name: form.manager_name,
+                manager_phone: form.manager_phone,
+            };
+            if (Object.values(employment).some(Boolean)) payload.employment = employment;
 
             await updateMyProfile(payload);
 
-            setSuccess("Профайл амжилттай шинэчлэгдлээ.");
+            setToast({ type: "success", message: "Профайл амжилттай шинэчлэгдлээ." });
             setEditMode(false);
 
             await loadProfile();
@@ -164,8 +196,8 @@ export default function Profile() {
 
     return (
         <div style={styles.container} className="page-container">
+            <Toast toast={toast} onClose={() => setToast(null)} />
             {error && <div style={styles.errorBox}>{error}</div>}
-            {success && <div style={styles.successBox}>{success}</div>}
             <div style={styles.headerBlock} className="responsive-card profile-header">
                 <div style={styles.userInfoWrapper} className="responsive-card-header">
                     <div style={styles.avatarCircle}>
@@ -190,10 +222,10 @@ export default function Profile() {
                                     onClick={() => {
                                         setEditMode(true);
                                         setError("");
-                                        setSuccess("");
+                                        setToast(null);
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.target.style.background = "#eff6ff";
+                                        e.target.style.background = "#f3f4f6";
                                     }}
                                     onMouseLeave={(e) => {
                                         e.target.style.background = "white";
@@ -246,7 +278,7 @@ export default function Profile() {
                         </div>
                     </div>
                     <div style={styles.sectionCard} className="responsive-card">
-                        <h3 style={styles.sectionTitle}>Хувийн мэдээлэл</h3>
+                        <h3 style={styles.sectionTitle}>Үндсэн мэдээлэл</h3>
 
                         <div style={styles.infoGrid} className="responsive-grid two-col-grid">
                             <InfoRow
@@ -255,8 +287,13 @@ export default function Profile() {
                             />
 
                             <InfoRow
-                                label="Регистр"
+                                label="Регистрийн дугаар"
                                 value={profile.register_no || "-"}
+                            />
+
+                            <InfoRow
+                                label="Иргэний бүртгэлийн дугаар"
+                                value={profile.citizen_registration_no || "-"}
                             />
 
                             <InfoRow
@@ -288,11 +325,31 @@ export default function Profile() {
                                 label="Төрсөн газар"
                                 value={profile.birth_place || "-"}
                             />
+
+                            <InfoRow
+                                label="Боловсрол"
+                                value={profile.education || "-"}
+                            />
+
+                            <InfoRow
+                                label="Мэргэжил"
+                                value={profile.profession || "-"}
+                            />
+
+                            <InfoRow
+                                label="Үйл ажиллагааны чиглэл"
+                                value={profile.activity_dir || "-"}
+                            />
+
+                            <InfoRow
+                                label="Хөдөлмөр эрхлэлт"
+                                value={profile.business_type || "-"}
+                            />
                         </div>
                     </div>
                     <div style={styles.sectionCard} className="responsive-card">
                         <h3 style={styles.sectionTitle}>
-                            Холбоо барих, ажил мэргэжил
+                            Холбоо барих мэдээлэл
                         </h3>
 
                         <div style={styles.infoGrid} className="responsive-grid two-col-grid">
@@ -307,7 +364,7 @@ export default function Profile() {
                             />
 
                             <InfoRow
-                                label="Имэйл/нэмэлт/"
+                                label="И-мэйл"
                                 value={profile.email || "-"}
                             />
 
@@ -317,7 +374,12 @@ export default function Profile() {
                             />
 
                             <InfoRow
-                                label="Бүртгэлтэй хаяг"
+                                label="Амьдарч байгаа хаяг"
+                                value={profile.living_address || "-"}
+                            />
+
+                            <InfoRow
+                                label="Албан ёсны хаяг"
                                 value={profile.official_address || "-"}
                             />
 
@@ -326,25 +388,19 @@ export default function Profile() {
                                 value={profile.current_address || "-"}
                             />
 
-                            <InfoRow
-                                label="Үйл ажиллагааны чиглэл"
-                                value={profile.activity_dir || "-"}
-                            />
+                        </div>
+                    </div>
+                    <div style={styles.sectionCard} className="responsive-card">
+                        <h3 style={styles.sectionTitle}>Хөдөлмөр эрхлэлт</h3>
 
-                            <InfoRow
-                                label="Бизнесийн төрөл"
-                                value={profile.business_type || "-"}
-                            />
-
-                            <InfoRow
-                                label="Боловсрол"
-                                value={profile.education || "-"}
-                            />
-
-                            <InfoRow
-                                label="Мэргэжил"
-                                value={profile.profession || "-"}
-                            />
+                        <div style={styles.infoGrid} className="responsive-grid two-col-grid">
+                            <InfoRow label="Байгууллага" value={profile.employment?.organization_name || "-"} />
+                            <InfoRow label="Албан тушаал" value={profile.employment?.position || "-"} />
+                            <InfoRow label="Ажилласан жил" value={profile.employment?.worked_year ? `${profile.employment.worked_year} жил` : "-"} />
+                            <InfoRow label="Сарын цалин" value={profile.employment?.monthly_salary ? new Intl.NumberFormat("mn-MN").format(profile.employment.monthly_salary) : "-"} />
+                            <InfoRow label="Байгууллагын хаяг" value={profile.employment?.organization_address || "-"} />
+                            <InfoRow label="Удирдах албан тушаалтан" value={profile.employment?.manager_name || "-"} />
+                            <InfoRow label="Удирдах ажилтны утас" value={profile.employment?.manager_phone || "-"} />
                         </div>
                     </div>
                 </>
@@ -368,6 +424,14 @@ export default function Profile() {
                                 value={form.phone}
                                 onChange={handleChange}
                                 placeholder="Утас"
+                            />
+
+                            <FormInput
+                                label="Иргэний бүртгэлийн дугаар"
+                                name="citizen_registration_no"
+                                value={form.citizen_registration_no}
+                                onChange={handleChange}
+                                placeholder="Иргэний бүртгэлийн дугаар"
                             />
 
                             <FormInput
@@ -409,6 +473,26 @@ export default function Profile() {
                                 onChange={handleChange}
                                 placeholder="Жишээ: Нягтлан"
                             />
+
+                            <FormInput label="Байгууллага" name="organization_name" value={form.organization_name} onChange={handleChange} placeholder="Байгууллагын нэр" />
+                            <FormInput label="Албан тушаал" name="position" value={form.position} onChange={handleChange} placeholder="Албан тушаал" />
+                            <FormInput label="Ажилласан жил" name="worked_year" type="number" value={form.worked_year} onChange={handleChange} placeholder="Жишээ: 5" />
+                            <FormInput label="Сарын цалин" name="monthly_salary" type="number" value={form.monthly_salary} onChange={handleChange} placeholder="Жишээ: 2500000" />
+                            <FormInput label="Удирдах албан тушаалтан" name="manager_name" value={form.manager_name} onChange={handleChange} placeholder="Нэр" />
+                            <FormInput label="Удирдах ажилтны утас" name="manager_phone" value={form.manager_phone} onChange={handleChange} placeholder="8 оронтой утас" />
+                        </div>
+
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Амьдарч байгаа хаяг</label>
+
+                            <textarea
+                                name="living_address"
+                                value={form.living_address}
+                                onChange={handleChange}
+                                placeholder="Амьдарч байгаа хаяг"
+                                style={styles.textarea}
+                                rows={3}
+                            />
                         </div>
 
                         <div style={styles.inputGroup}>
@@ -419,6 +503,19 @@ export default function Profile() {
                                 value={form.official_address}
                                 onChange={handleChange}
                                 placeholder="Албан хаяг"
+                                style={styles.textarea}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Байгууллагын хаяг</label>
+
+                            <textarea
+                                name="organization_address"
+                                value={form.organization_address}
+                                onChange={handleChange}
+                                placeholder="Байгууллагын хаяг"
                                 style={styles.textarea}
                                 rows={3}
                             />
@@ -471,12 +568,13 @@ function InfoRow({ label, value }) {
     );
 }
 
-function FormInput({ label, name, value, onChange, placeholder }) {
+function FormInput({ label, name, value, onChange, placeholder, type = "text" }) {
     return (
         <div style={styles.inputGroup}>
             <label style={styles.label}>{label}</label>
 
             <input
+                type={type}
                 name={name}
                 value={value}
                 onChange={onChange}
@@ -511,8 +609,8 @@ const styles = {
         width: "64px",
         height: "64px",
         borderRadius: "50%",
-        background: "#e0f2fe", 
-        color: "#2563eb", 
+        background: "#f3f4f6", 
+        color: "#111827", 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -550,9 +648,9 @@ const styles = {
     editButton: {
         padding: "8px 16px",
         borderRadius: "8px",
-        border: "1px solid #2563eb", 
+        border: "1px solid #111827", 
         background: "white", 
-        color: "#2563eb", 
+        color: "#111827", 
         cursor: "pointer",
         fontSize: "13px",
         fontWeight: "700",
@@ -670,7 +768,7 @@ const styles = {
         padding: "10px 18px",
         borderRadius: "10px",
         border: "none",
-        background: "#2563eb",
+        background: "#111827",
         color: "white",
         cursor: "pointer",
         fontSize: "14px",
@@ -680,16 +778,6 @@ const styles = {
     errorBox: {
         background: "#fee2e2",
         color: "#b91c1c",
-        borderRadius: "12px",
-        padding: "12px 16px",
-        marginBottom: "16px",
-        fontSize: "14px",
-        fontWeight: "600",
-    },
-
-    successBox: {
-        background: "#dcfce7",
-        color: "#15803d",
         borderRadius: "12px",
         padding: "12px 16px",
         marginBottom: "16px",

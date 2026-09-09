@@ -35,3 +35,13 @@ export async function updateCustomer(
   }
   return await customer.update(updateData, { transaction });
 }
+
+export async function upsertEmployment(customerId, employmentData, transaction) {
+  const employment = await Employment.findOne({
+    where: { customer_id: customerId },
+    transaction,
+  });
+  return employment
+    ? employment.update(employmentData, { transaction })
+    : Employment.create({ customer_id: customerId, ...employmentData }, { transaction });
+}

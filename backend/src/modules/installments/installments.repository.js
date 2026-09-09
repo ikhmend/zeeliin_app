@@ -12,9 +12,13 @@ export async function getInstallmentsByLoanId(loanId, transaction = null) {
 }
 export async function getInstallmentsByCustomerId(customerId) {
   return await Installment.findAll({
-    where: {
-      customer_id: customerId,
-    },
+    include: [{
+      model: Loan,
+      as: "loan",
+      attributes: [],
+      required: true,
+      where: { customer_id: customerId },
+    }],
     order: [["installment_no", "asc"]],
   });
 }

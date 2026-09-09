@@ -12,12 +12,6 @@ export async function makePayment(id, paymentData) {
     paymentData;
   const paymentCents = toCents(payment_amount);
   const paymentDate = new Date();
-  if (process.env.DEMO_PAYMENTS_ENABLED !== "true") {
-    throw new AppError(
-      "Бодит төлбөрийн gateway холбогдоогүй тул төлөлт хаалттай байна.",
-      503,
-    );
-  }
   if (
     !Number.isSafeInteger(paymentCents) ||
     paymentCents <= 0 ||
