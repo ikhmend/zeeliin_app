@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 const pageNames = {
     "/dashboard": "Хянах самбар",
     "/loans": "Зээлүүд",
-    "/payments": "Төлөлтүүд",
+    "/payments": "Төлөлтийн хуваарь",
     "/profile": "Профайл",
     "/settings": "Тохиргоо",
 };

@@ -180,9 +180,6 @@ export default function Payments() {
                 <div style={styles.sectionHeader} className="responsive-card-header">
                     <div>
                         <h3 style={styles.boxTitle}>Төлөлтийн жагсаалт</h3>
-                        <p style={styles.sectionSubText}>
-                            Нийт {payments.length} төлөлт байна
-                        </p>
                     </div>
                 </div>
 

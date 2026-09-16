@@ -288,7 +288,6 @@ const paginatedInstallments = installments.slice(
                 <div style={styles.scheduleHeader}>
                     <div>
                         <h3 style={styles.boxTitle}>Төлөлтийн хуваарь</h3>
-                        <p style={styles.scheduleSubText}>Нийт {installments.length} төлөлт байна</p>
                     </div>
                 </div>
 

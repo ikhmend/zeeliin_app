@@ -2,11 +2,11 @@ import { NavLink } from "react-router-dom";
 import { CircleDollarSign, CreditCard, House, Settings, User } from "lucide-react";
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     const menu = [
-        { name: "Dashboard", path: "/dashboard", icon: <House className="size-4" /> },
-        { name: "My Loan", path: "/loans", icon: <CircleDollarSign className="size-4" /> },
-        { name: "Payments", path: "/payments", icon: <CreditCard className="size-4" /> },
-        { name: "Profile", path: "/profile", icon: <User className="size-4" /> },
-        { name: "Settings", path: "/settings", icon: <Settings className="size-4" /> },
+        { name: "Хянах самбар", path: "/dashboard", icon: <House className="size-4" /> },
+        { name: "Миний зээлүүд", path: "/loans", icon: <CircleDollarSign className="size-4" /> },
+        { name: "Төлөлтийн хуваарь", path: "/payments", icon: <CreditCard className="size-4" /> },
+        { name: "Профайл", path: "/profile", icon: <User className="size-4" /> },
+        { name: "Тохиргоо", path: "/settings", icon: <Settings className="size-4" /> },
 
     ];
 
@@ -16,7 +16,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
             className={`app-sidebar ${isOpen ? "open" : ""}`}
         >
             <div style={styles.sidebarTop}>
-                <div style={styles.logo}>Loan-App</div>
+                <div style={styles.logo}>Зээлийн апп</div>
 
                 <button
                     type="button"
